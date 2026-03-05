@@ -88,4 +88,3 @@ class StockMovementController extends Controller
         return response()->json($movement);
     }
 }
-}
