@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { ThemeProvider } from './context/ThemeContext'
+import { LanguageProvider } from './context/LanguageContext'
 import { ConfirmProvider } from './components/ConfirmDialog'
 import { KeyboardProvider } from './context/KeyboardContext'
 import CommandPalette from './components/CommandPalette'
@@ -64,17 +65,19 @@ export default function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider>
-        <ConfirmProvider>
-          <AuthProvider>
-            <BrowserRouter>
-              <KeyboardProvider>
-                <AppRoutes />
-                <CommandPalette />
-              </KeyboardProvider>
-              <Toaster position="top-right" toastOptions={{ duration: 3500 }} />
-            </BrowserRouter>
-          </AuthProvider>
-        </ConfirmProvider>
+        <LanguageProvider>
+          <ConfirmProvider>
+            <AuthProvider>
+              <BrowserRouter>
+                <KeyboardProvider>
+                  <AppRoutes />
+                  <CommandPalette />
+                </KeyboardProvider>
+                <Toaster position="top-right" toastOptions={{ duration: 3500 }} />
+              </BrowserRouter>
+            </AuthProvider>
+          </ConfirmProvider>
+        </LanguageProvider>
       </ThemeProvider>
     </ErrorBoundary>
   )

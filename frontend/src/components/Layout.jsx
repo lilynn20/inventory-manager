@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
+import { useLanguage } from '../context/LanguageContext'
 import { useKeyboard } from '../context/KeyboardContext'
 import Breadcrumbs from './Breadcrumbs'
 import OnboardingTour, { useOnboarding } from './OnboardingTour'
@@ -10,36 +11,36 @@ import {
   LogOut, Users, Truck, TrendingUp, Activity, Bell, Upload, Settings, Moon, Sun, Keyboard, Menu, X, Search, HelpCircle, ChevronLeft, ChevronRight
 } from 'lucide-react'
 
-const navSections = [
+const getNavSections = (t) => [
   {
-    label: 'Overview',
+    label: t('nav.overview'),
     items: [
-      { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+      { to: '/dashboard', icon: LayoutDashboard, label: t('nav.dashboard') },
     ]
   },
   {
-    label: 'Inventory',
+    label: t('nav.inventory'),
     items: [
-      { to: '/dashboard/products', icon: Package, label: 'Products' },
-      { to: '/dashboard/categories', icon: Tag, label: 'Categories' },
-      { to: '/dashboard/suppliers', icon: Truck, label: 'Suppliers' },
-      { to: '/dashboard/movements', icon: ArrowLeftRight, label: 'Stock Movements' },
+      { to: '/dashboard/products', icon: Package, label: t('nav.products') },
+      { to: '/dashboard/categories', icon: Tag, label: t('nav.categories') },
+      { to: '/dashboard/suppliers', icon: Truck, label: t('nav.suppliers') },
+      { to: '/dashboard/movements', icon: ArrowLeftRight, label: t('nav.stockMovements') },
     ]
   },
   {
-    label: 'Analytics',
+    label: t('nav.analytics'),
     items: [
-      { to: '/dashboard/predictions', icon: TrendingUp, label: 'Predictions' },
+      { to: '/dashboard/predictions', icon: TrendingUp, label: t('nav.predictions') },
     ]
   },
   {
-    label: 'Administration',
+    label: t('nav.administration'),
     adminOnly: true,
     items: [
-      { to: '/dashboard/employees', icon: Users, label: 'Team' },
-      { to: '/dashboard/activity-logs', icon: Activity, label: 'Activity Logs' },
-      { to: '/dashboard/notifications', icon: Bell, label: 'Notifications' },
-      { to: '/dashboard/import', icon: Upload, label: 'Import Data' },
+      { to: '/dashboard/employees', icon: Users, label: t('nav.team') },
+      { to: '/dashboard/activity-logs', icon: Activity, label: t('nav.activityLogs') },
+      { to: '/dashboard/notifications', icon: Bell, label: t('nav.notifications') },
+      { to: '/dashboard/import', icon: Upload, label: t('nav.importData') },
     ]
   },
 ]
@@ -61,6 +62,7 @@ const navItems = [
 export default function Layout() {
   const { user, logout, isAdmin } = useAuth()
   const { isDark, toggleTheme } = useTheme()
+  const { language, toggleLanguage, t } = useLanguage()
   const { setShowHelp } = useKeyboard()
   const { showTour, completeTour, startTour } = useOnboarding()
   const navigate = useNavigate()
@@ -181,7 +183,7 @@ export default function Layout() {
 
         {/* Nav */}
         <nav style={{ flex: 1, padding: sidebarCollapsed && !isMobile ? '16px 8px' : '16px 12px', overflowY: 'auto', overflowX: 'hidden' }}>
-          {navSections
+          {getNavSections(t)
             .filter(section => !section.adminOnly || isAdmin)
             .map((section, sectionIndex) => (
               <div key={section.label} style={{ marginBottom: 20 }}>
@@ -367,7 +369,7 @@ export default function Layout() {
           </NavLink>
           <button
             onClick={handleLogout}
-            title={sidebarCollapsed && !isMobile ? 'Sign Out' : undefined}
+            title={sidebarCollapsed && !isMobile ? t('auth.signOut') : undefined}
             style={{
               width: '100%', 
               display: 'flex', 
@@ -394,7 +396,7 @@ export default function Layout() {
             }}
           >
             <LogOut size={16} />
-            {(!sidebarCollapsed || isMobile) && 'Sign Out'}
+            {(!sidebarCollapsed || isMobile) && t('auth.signOut')}
           </button>
         </div>
       </aside>
@@ -530,6 +532,32 @@ export default function Layout() {
             title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
           >
             {isDark ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
+
+          {/* Language Toggle */}
+          <button
+            onClick={toggleLanguage}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minWidth: 36,
+              height: 36,
+              padding: '0 10px',
+              borderRadius: 8,
+              border: '1px solid var(--border)',
+              background: 'var(--bg)',
+              color: 'var(--text)',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              fontSize: 13,
+              fontWeight: 700,
+              gap: 6,
+            }}
+            title={language === 'en' ? 'Switch to French' : 'Passer en anglais'}
+          >
+            <span style={{ fontSize: 16 }}>{language === 'en' ? '🇬🇧' : '🇫🇷'}</span>
+            {!isMobile && <span>{language.toUpperCase()}</span>}
           </button>
           
           {/* User info - hide details on mobile */}
