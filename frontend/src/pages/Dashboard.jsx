@@ -75,7 +75,8 @@ export default function Dashboard() {
     }
   }
 
-  if (loading) return (
+  // Only show full skeleton on initial load
+  if (loading && !data) return (
     <div className="fade-in" style={{ background: 'var(--bg)' }}>
       <SkeletonStats count={4} />
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: 24, marginTop: 24 }}>
@@ -93,6 +94,8 @@ export default function Dashboard() {
       </div>
     </div>
   )
+  
+  if (!data) return null
 
   const { stats, low_stock_products, recent_movements, chart_data, top_products } = data
 
@@ -333,10 +336,31 @@ export default function Dashboard() {
             </button>
           </>
         )}
+        {loading && (
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-muted)', fontSize: 13 }}>
+            <div style={{
+              width: 14,
+              height: 14,
+              border: '2px solid var(--border)',
+              borderTopColor: '#4f46e5',
+              borderRadius: '50%',
+              animation: 'spin 0.8s linear infinite'
+            }} />
+            Updating...
+          </div>
+        )}
       </div>
 
       {/* Stats Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px,1fr))', gap: 16, marginBottom: 28 }}>
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fill, minmax(220px,1fr))', 
+        gap: 16, 
+        marginBottom: 28,
+        opacity: loading ? 0.6 : 1,
+        transition: 'opacity 0.2s',
+        pointerEvents: loading ? 'none' : 'auto'
+      }}>
         <StatCard icon={Package} label="Total Products"   value={stats.total_products}   color="#4f46e5" />
         <StatCard icon={Tag}     label="Categories"       value={stats.total_categories} color="#10b981" />
         <StatCard icon={Activity} label="Total Stock"     value={stats.total_stock}       color="#3b82f6" sub="units in warehouse" />
