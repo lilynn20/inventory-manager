@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\StockMovement;
 use App\Models\Product;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class StockMovementController extends Controller
 {
@@ -31,9 +33,15 @@ class StockMovementController extends Controller
             $query->where('created_at', '<=', $request->to);
         }
 
-        $movements = $query->orderBy('created_at', 'desc')
-                           ->take($request->get('limit', 100))
-                           ->get();
+        // Pagination
+        $perPage = $request->get('per_page', 20);
+        if ($request->boolean('paginate', false)) {
+            $movements = $query->orderBy('created_at', 'desc')->paginate($perPage);
+        } else {
+            $movements = $query->orderBy('created_at', 'desc')
+                               ->take($request->get('limit', 100))
+                               ->get();
+        }
 
         return response()->json($movements);
     }
@@ -58,23 +66,33 @@ class StockMovementController extends Controller
             ], 422);
         }
 
-        // Adjust product quantity
-        if ($request->type === 'in') {
-            $product->increment('quantity', $request->quantity);
-        } else {
-            $product->decrement('quantity', $request->quantity);
-        }
+        // Use transaction to ensure atomicity
+        $movement = DB::transaction(function () use ($request, $product, $companyId) {
+            // Adjust product quantity
+            if ($request->type === 'in') {
+                $product->increment('quantity', $request->quantity);
+            } else {
+                $product->decrement('quantity', $request->quantity);
+            }
 
-        $movement = StockMovement::create([
-            'product_id' => $request->product_id,
-            'type'       => $request->type,
-            'quantity'   => $request->quantity,
-            'user_id'    => Auth::id(),
-            'note'       => $request->note,
-            'company_id' => $companyId,
-        ]);
+            return StockMovement::create([
+                'product_id' => $request->product_id,
+                'type'       => $request->type,
+                'quantity'   => $request->quantity,
+                'user_id'    => Auth::id(),
+                'note'       => $request->note,
+                'company_id' => $companyId,
+            ]);
+        });
 
         $movement->load(['product', 'user']);
+
+        $action = $movement->type === 'in' ? 'stock_in' : 'stock_out';
+        ActivityLog::log($action, 'stock_movement', (string) $movement->_id, $movement->product?->name, [
+            'quantity' => $movement->quantity,
+            'type'     => $movement->type,
+            'note'     => $movement->note,
+        ]);
 
         return response()->json($movement, 201);
     }

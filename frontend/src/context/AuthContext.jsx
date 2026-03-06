@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react'
-import { login as loginApi, logout as logoutApi } from '../services/api'
+import { login as loginApi, logout as logoutApi, getMe } from '../services/api'
 import toast from 'react-hot-toast'
 
 const AuthContext = createContext(null)
@@ -10,6 +10,27 @@ export function AuthProvider({ children }) {
     return stored ? JSON.parse(stored) : null
   })
   const [loading, setLoading] = useState(false)
+  const [initializing, setInitializing] = useState(true)
+
+  // Validate token on app startup
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    if (token) {
+      getMe()
+        .then(r => {
+          setUser(r.data)
+          localStorage.setItem('user', JSON.stringify(r.data))
+        })
+        .catch(() => {
+          localStorage.removeItem('token')
+          localStorage.removeItem('user')
+          setUser(null)
+        })
+        .finally(() => setInitializing(false))
+    } else {
+      setInitializing(false)
+    }
+  }, [])
 
   const login = async (email, password) => {
     setLoading(true)
@@ -37,8 +58,17 @@ export function AuthProvider({ children }) {
 
   const isAdmin = user?.role === 'admin'
 
+  // Show loading while validating token
+  if (initializing) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+        <div className="spinner" />
+      </div>
+    )
+  }
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading, isAdmin }}>
+    <AuthContext.Provider value={{ user, setUser, login, logout, loading, isAdmin, initializing }}>
       {children}
     </AuthContext.Provider>
   )

@@ -12,7 +12,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        //
+        // Check for low stock products daily at 8:00 AM
+        $schedule->command('stock:check-low')->dailyAt('08:00');
     }
 
     /**
@@ -20,6 +21,6 @@ class Kernel extends ConsoleKernel
      */
     protected function commands(): void
     {
-        //
+        $this->load(__DIR__.'/Commands');
     }
 }

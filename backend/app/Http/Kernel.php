@@ -13,6 +13,8 @@ class Kernel extends HttpKernel
         \Illuminate\Http\Middleware\HandleCors::class,
         \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
+        \Illuminate\Foundation\Http\Middleware\TrimStrings::class,
+        \App\Http\Middleware\SanitizeInput::class,
     ];
 
     /**
@@ -30,5 +32,6 @@ class Kernel extends HttpKernel
     protected $middlewareAliases = [
         'auth.jwt' => \App\Http\Middleware\JwtMiddleware::class,
         'role' => \App\Http\Middleware\RoleMiddleware::class,
+        'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
     ];
 }

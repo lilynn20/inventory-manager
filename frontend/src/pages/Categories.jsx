@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { getCategories, createCategory, updateCategory, deleteCategory } from '../services/api'
 import { useAuth } from '../context/AuthContext'
+import { useConfirm } from '../components/ConfirmDialog'
 import toast from 'react-hot-toast'
 import { Plus, Pencil, Trash2, X, Tag } from 'lucide-react'
+import DataTable from '../components/DataTable'
 
 function CategoryModal({ category, onClose, onSave }) {
   const [name, setName]             = useState(category?.name || '')
@@ -62,6 +64,7 @@ function CategoryModal({ category, onClose, onSave }) {
 
 export default function Categories() {
   const { isAdmin }            = useAuth()
+  const { confirm }            = useConfirm()
   const [categories, setCategories] = useState([])
   const [loading, setLoading]       = useState(true)
   const [modal, setModal]           = useState(null) // null | 'add' | category obj
@@ -76,7 +79,13 @@ export default function Categories() {
   useEffect(() => { load() }, [])
 
   const handleDelete = async (cat) => {
-    if (!confirm(`Delete category "${cat.name}"?`)) return
+    const result = await confirm({
+      title: 'Delete Category',
+      message: `Are you sure you want to delete "${cat.name}"? This action cannot be undone.`,
+      confirmText: 'Delete',
+      variant: 'danger'
+    })
+    if (!result) return
     try {
       await deleteCategory(cat._id)
       toast.success('Category deleted')
@@ -100,59 +109,56 @@ export default function Categories() {
       {loading
         ? <div className="spinner" />
         : (
-          <div className="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Name</th>
-                  <th>Description</th>
-                  <th>Products</th>
-                  <th>Created</th>
-                  {isAdmin && <th>Actions</th>}
-                </tr>
-              </thead>
-              <tbody>
-                {categories.length === 0
-                  ? (
-                    <tr>
-                      <td colSpan={6}>
-                        <div className="empty-state">
-                          <Tag size={40} />
-                          <p>No categories found</p>
-                        </div>
-                      </td>
-                    </tr>
-                  )
-                  : categories.map((cat, i) => (
-                    <tr key={cat._id}>
-                      <td style={{ color:'var(--text-muted)', width:40 }}>{i+1}</td>
-                      <td><strong>{cat.name}</strong></td>
-                      <td style={{ color:'var(--text-muted)', maxWidth:300 }}>{cat.description || '—'}</td>
-                      <td>
-                        <span className="badge badge-info">{cat.products_count ?? 0}</span>
-                      </td>
-                      <td style={{ color:'var(--text-muted)', fontSize:13 }}>
-                        {new Date(cat.created_at).toLocaleDateString()}
-                      </td>
-                      {isAdmin && (
-                        <td>
-                          <div style={{ display:'flex', gap:6 }}>
-                            <button className="btn btn-outline btn-sm" onClick={() => setModal(cat)}>
-                              <Pencil size={14} />
-                            </button>
-                            <button className="btn btn-danger btn-sm" onClick={() => handleDelete(cat)}>
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                        </td>
-                      )}
-                    </tr>
-                  ))
-                }
-              </tbody>
-            </table>
-          </div>
+          <DataTable
+            columns={[
+              {
+                key: 'index',
+                label: '#',
+                width: 60,
+                render: (cat, index) => <span style={{ color:'var(--text-muted)' }}>{index + 1}</span>
+              },
+              {
+                key: 'name',
+                label: 'Name',
+                sortable: true,
+                render: (cat) => <strong>{cat.name}</strong>
+              },
+              {
+                key: 'description',
+                label: 'Description',
+                render: (cat) => <span style={{ color:'var(--text-muted)', maxWidth:300 }}>{cat.description || '—'}</span>
+              },
+              {
+                key: 'products_count',
+                label: 'Products',
+                sortable: true,
+                render: (cat) => <span className="badge badge-info">{cat.products_count ?? 0}</span>
+              },
+              {
+                key: 'created_at',
+                label: 'Created',
+                sortable: true,
+                render: (cat) => <span style={{ color:'var(--text-muted)', fontSize:13 }}>{new Date(cat.created_at).toLocaleDateString()}</span>
+              },
+              ...(isAdmin ? [{
+                key: 'actions',
+                label: 'Actions',
+                render: (cat) => (
+                  <div style={{ display:'flex', gap:6 }}>
+                    <button className="btn btn-outline btn-sm" onClick={() => setModal(cat)}>
+                      <Pencil size={14} />
+                    </button>
+                    <button className="btn btn-danger btn-sm" onClick={() => handleDelete(cat)}>
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                )
+              }] : [])
+            ]}
+            data={categories}
+            emptyIcon={<Tag size={40} />}
+            emptyMessage="No categories found"
+          />
         )
       }
 

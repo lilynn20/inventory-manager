@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\Supplier;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -13,7 +15,7 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         $companyId = Auth::user()->company_id;
-        $query = Product::with('category')->where('company_id', $companyId);
+        $query = Product::with(['category', 'supplier'])->where('company_id', $companyId);
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -27,13 +29,21 @@ class ProductController extends Controller
             $query->where('category_id', $request->category_id);
         }
 
-        $products = $query->orderBy('created_at', 'desc')->get();
+        if ($request->filled('supplier_id')) {
+            $query->where('supplier_id', $request->supplier_id);
+        }
 
-        // Filter low stock in memory for MongoDB compatibility
+        // Filter low stock
         if ($request->boolean('low_stock')) {
-            $products = $products->filter(function ($p) {
-                return $p->quantity <= $p->low_stock_threshold;
-            })->values();
+            $query->whereRaw(['$expr' => ['$lte' => ['$quantity', '$low_stock_threshold']]]);
+        }
+
+        // Pagination
+        $perPage = $request->get('per_page', 20);
+        if ($request->boolean('paginate', false)) {
+            $products = $query->orderBy('created_at', 'desc')->paginate($perPage);
+        } else {
+            $products = $query->orderBy('created_at', 'desc')->get();
         }
 
         return response()->json($products);
@@ -47,6 +57,7 @@ class ProductController extends Controller
             'name'                => 'required|string|max:255',
             'description'         => 'nullable|string',
             'category_id'         => 'required|string',
+            'supplier_id'         => 'nullable|string',
             'price'               => 'required|numeric|min:0',
             'quantity'            => 'required|integer|min:0',
             'low_stock_threshold' => 'nullable|integer|min:0',
@@ -64,8 +75,15 @@ class ProductController extends Controller
         // Validate category exists and belongs to company
         Category::where('company_id', $companyId)->findOrFail($request->category_id);
 
+        // Validate supplier if provided
+        if ($request->filled('supplier_id')) {
+            Supplier::where('company_id', $companyId)->findOrFail($request->supplier_id);
+        }
+
         $product = Product::create($data);
-        $product->load('category');
+        $product->load(['category', 'supplier']);
+
+        ActivityLog::log('created', 'product', (string) $product->_id, $product->name);
 
         return response()->json($product, 201);
     }
@@ -73,7 +91,7 @@ class ProductController extends Controller
     public function show($id)
     {
         $companyId = Auth::user()->company_id;
-        $product = Product::with('category')
+        $product = Product::with(['category', 'supplier'])
             ->where('company_id', $companyId)
             ->findOrFail($id);
         return response()->json($product);
@@ -88,6 +106,7 @@ class ProductController extends Controller
             'name'                => 'required|string|max:255',
             'description'         => 'nullable|string',
             'category_id'         => 'required|string',
+            'supplier_id'         => 'nullable|string',
             'price'               => 'required|numeric|min:0',
             'quantity'            => 'required|integer|min:0',
             'low_stock_threshold' => 'nullable|integer|min:0',
@@ -106,8 +125,15 @@ class ProductController extends Controller
 
         Category::where('company_id', $companyId)->findOrFail($request->category_id);
 
+        // Validate supplier if provided
+        if ($request->filled('supplier_id')) {
+            Supplier::where('company_id', $companyId)->findOrFail($request->supplier_id);
+        }
+
         $product->update($data);
-        $product->load('category');
+        $product->load(['category', 'supplier']);
+
+        ActivityLog::log('updated', 'product', (string) $product->_id, $product->name);
 
         return response()->json($product);
     }
@@ -121,7 +147,12 @@ class ProductController extends Controller
             Storage::disk('public')->delete($product->image);
         }
 
+        $productName = $product->name;
+        $productId = (string) $product->_id;
         $product->delete();
+
+        ActivityLog::log('deleted', 'product', $productId, $productName);
+
         return response()->json(['message' => 'Product deleted']);
     }
 }

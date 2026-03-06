@@ -62,7 +62,12 @@ export default function Login() {
           </div>
 
           <div className="form-group">
-            <label>Password</label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <label>Password</label>
+              <Link to="/forgot-password" style={{ fontSize: 13, color: '#4f46e5', textDecoration: 'none' }}>
+                Forgot password?
+              </Link>
+            </div>
             <div style={{ position: 'relative' }}>
               <Lock size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
               <input

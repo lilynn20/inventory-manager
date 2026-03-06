@@ -10,7 +10,7 @@ class Product extends Model
     protected $collection = 'products';
 
     protected $fillable = [
-        'name', 'description', 'category_id', 'price', 'quantity', 'image', 'low_stock_threshold', 'company_id',
+        'name', 'description', 'category_id', 'supplier_id', 'price', 'quantity', 'image', 'low_stock_threshold', 'company_id',
     ];
 
     public function company()
@@ -26,6 +26,11 @@ class Product extends Model
     public function category()
     {
         return $this->belongsTo(Category::class, 'category_id');
+    }
+
+    public function supplier()
+    {
+        return $this->belongsTo(Supplier::class, 'supplier_id');
     }
 
     public function stockMovements()

@@ -1,87 +1,93 @@
 import { Link } from 'react-router-dom'
-import { Package, BarChart3, Users, Shield, ArrowRight, Check } from 'lucide-react'
+import { Package, BarChart3, Users, Shield, ArrowRight, Check, TrendingUp, Bell } from 'lucide-react'
 
 export default function Home() {
   const features = [
     {
       icon: Package,
       title: 'Inventory Tracking',
-      description: 'Track all your products, stock levels, and movements in real-time.'
+      description: 'Track all your products, stock levels, and movements in real-time.',
+      color: '#4f46e5'
     },
     {
       icon: BarChart3,
       title: 'Analytics Dashboard',
-      description: 'Get insights into your inventory with powerful analytics and reports.'
+      description: 'Get insights into your inventory with powerful analytics and reports.',
+      color: '#10b981'
+    },
+    {
+      icon: TrendingUp,
+      title: 'Smart Predictions',
+      description: 'AI-powered consumption forecasting and reorder suggestions.',
+      color: '#f59e0b'
+    },
+    {
+      icon: Bell,
+      title: 'Low Stock Alerts',
+      description: 'Get notified when products are running low on stock.',
+      color: '#ef4444'
     },
     {
       icon: Users,
       title: 'Team Management',
-      description: 'Invite team members and manage roles with admin controls.'
+      description: 'Invite team members and manage roles with admin controls.',
+      color: '#3b82f6'
     },
     {
       icon: Shield,
       title: 'Secure & Isolated',
-      description: 'Your data is completely isolated and secure from other companies.'
+      description: 'Your data is completely isolated and secure from other companies.',
+      color: '#8b5cf6'
     }
   ]
 
-  const pricingFeatures = [
-    'Unlimited products',
-    'Unlimited categories',
-    'Stock movement tracking',
-    'Team collaboration',
-    'Analytics dashboard',
-    'Low stock alerts'
-  ]
-
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4f46e5 100%)' }}>
       {/* Navigation */}
-      <nav className="border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-2">
-              <Package className="h-8 w-8 text-blue-500" />
-              <span className="text-xl font-bold text-white">StockFlow</span>
+      <nav style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', padding: '0 24px' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: 70 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 40, height: 40, borderRadius: 10, background: '#4f46e5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Package size={22} color="white" />
             </div>
-            <div className="flex items-center gap-4">
-              <Link to="/login" className="text-gray-300 hover:text-white transition-colors">
-                Sign In
-              </Link>
-              <Link
-                to="/register"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-              >
-                Get Started
-              </Link>
-            </div>
+            <span style={{ fontSize: 22, fontWeight: 800, color: 'white' }}>StockFlow</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <Link to="/login" style={{ color: 'rgba(255,255,255,0.8)', fontWeight: 600, fontSize: 15 }}>
+              Sign In
+            </Link>
+            <Link to="/register" style={{ background: 'white', color: '#4f46e5', padding: '10px 20px', borderRadius: 10, fontWeight: 700, fontSize: 15 }}>
+              Get Started Free
+            </Link>
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="py-20 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
-            Manage Your Inventory
-            <span className="text-blue-500"> Effortlessly</span>
+      <section style={{ padding: '80px 24px', textAlign: 'center' }}>
+        <div style={{ maxWidth: 800, margin: '0 auto' }}>
+          <h1 style={{ fontSize: 52, fontWeight: 900, color: 'white', marginBottom: 20, lineHeight: 1.15 }}>
+            Intelligent Inventory<br />
+            <span style={{ color: '#a5b4fc' }}>Management System</span>
           </h1>
-          <p className="text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
-            The all-in-one inventory management platform for businesses of all sizes.
-            Track stock, manage teams, and grow your business.
+          <p style={{ fontSize: 20, color: 'rgba(255,255,255,0.7)', marginBottom: 40, lineHeight: 1.6 }}>
+            Track stock, predict demand, manage suppliers, and never run out of inventory again.
+            Built for small businesses that want to grow smarter.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              to="/register"
-              className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold text-lg transition-colors"
-            >
-              Start Free Trial
-              <ArrowRight className="h-5 w-5" />
+          <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link to="/register" style={{
+              display: 'inline-flex', alignItems: 'center', gap: 10,
+              background: 'white', color: '#4f46e5', padding: '16px 32px',
+              borderRadius: 12, fontWeight: 700, fontSize: 17,
+              boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
+            }}>
+              Start Free Trial <ArrowRight size={20} />
             </Link>
-            <Link
-              to="/login"
-              className="inline-flex items-center justify-center gap-2 bg-gray-800 hover:bg-gray-700 text-white px-8 py-3 rounded-lg font-semibold text-lg transition-colors border border-gray-700"
-            >
+            <Link to="/login" style={{
+              display: 'inline-flex', alignItems: 'center', gap: 10,
+              background: 'rgba(255,255,255,0.15)', color: 'white', padding: '16px 32px',
+              borderRadius: 12, fontWeight: 600, fontSize: 17, border: '1px solid rgba(255,255,255,0.2)'
+            }}>
               Sign In
             </Link>
           </div>
@@ -89,85 +95,56 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 px-4 bg-gray-800/50">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-white text-center mb-12">
+      <section style={{ padding: '60px 24px 100px', background: 'rgba(255,255,255,0.03)' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <h2 style={{ fontSize: 36, fontWeight: 800, color: 'white', textAlign: 'center', marginBottom: 50 }}>
             Everything You Need to Manage Inventory
           </h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24 }}>
             {features.map((feature, index) => (
-              <div key={index} className="bg-gray-800 rounded-xl p-6 border border-gray-700">
-                <div className="w-12 h-12 bg-blue-600/20 rounded-lg flex items-center justify-center mb-4">
-                  <feature.icon className="h-6 w-6 text-blue-500" />
+              <div key={index} style={{
+                background: 'rgba(255,255,255,0.08)', borderRadius: 16, padding: 28,
+                border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)'
+              }}>
+                <div style={{
+                  width: 50, height: 50, borderRadius: 12,
+                  background: feature.color + '25', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  marginBottom: 16
+                }}>
+                  <feature.icon size={24} color={feature.color} />
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-2">{feature.title}</h3>
-                <p className="text-gray-400">{feature.description}</p>
+                <h3 style={{ fontSize: 18, fontWeight: 700, color: 'white', marginBottom: 8 }}>{feature.title}</h3>
+                <p style={{ color: 'rgba(255,255,255,0.6)', lineHeight: 1.6 }}>{feature.description}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section className="py-20 px-4">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">Simple, Transparent Pricing</h2>
-          <p className="text-gray-400 mb-12">Start free, upgrade when you're ready.</p>
-          
-          <div className="bg-gray-800 rounded-2xl p-8 border border-gray-700">
-            <div className="mb-6">
-              <span className="text-5xl font-bold text-white">Free</span>
-              <span className="text-gray-400 ml-2">to get started</span>
-            </div>
-            <ul className="grid sm:grid-cols-2 gap-3 mb-8">
-              {pricingFeatures.map((feature, index) => (
-                <li key={index} className="flex items-center gap-2 text-gray-300">
-                  <Check className="h-5 w-5 text-green-500 flex-shrink-0" />
-                  {feature}
-                </li>
-              ))}
-            </ul>
-            <Link
-              to="/register"
-              className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold w-full sm:w-auto transition-colors"
-            >
-              Create Your Account
-              <ArrowRight className="h-5 w-5" />
-            </Link>
-          </div>
-        </div>
-      </section>
-
       {/* CTA Section */}
-      <section className="py-20 px-4 bg-blue-600">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">
+      <section style={{ padding: '80px 24px', background: '#4f46e5', textAlign: 'center' }}>
+        <div style={{ maxWidth: 700, margin: '0 auto' }}>
+          <h2 style={{ fontSize: 32, fontWeight: 800, color: 'white', marginBottom: 16 }}>
             Ready to Take Control of Your Inventory?
           </h2>
-          <p className="text-blue-100 mb-8 text-lg">
-            Join thousands of businesses managing their stock with StockFlow.
+          <p style={{ fontSize: 18, color: 'rgba(255,255,255,0.8)', marginBottom: 32 }}>
+            Join thousands of businesses managing their stock with StockFlow. Free forever for small teams.
           </p>
-          <Link
-            to="/register"
-            className="inline-flex items-center justify-center gap-2 bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors"
-          >
-            Get Started Now
-            <ArrowRight className="h-5 w-5" />
+          <Link to="/register" style={{
+            display: 'inline-flex', alignItems: 'center', gap: 10,
+            background: 'white', color: '#4f46e5', padding: '16px 40px',
+            borderRadius: 12, fontWeight: 700, fontSize: 17
+          }}>
+            Create Your Free Account <ArrowRight size={20} />
           </Link>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-8 px-4 border-t border-gray-800">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
-          <div className="flex items-center gap-2">
-            <Package className="h-6 w-6 text-blue-500" />
-            <span className="font-semibold text-white">StockFlow</span>
-          </div>
-          <p className="text-gray-500 text-sm">
-            © {new Date().getFullYear()} StockFlow. All rights reserved.
-          </p>
-        </div>
+      <footer style={{ padding: '30px 24px', borderTop: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>
+        <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 14 }}>
+          © 2026 StockFlow. Built for smart inventory management.
+        </p>
       </footer>
     </div>
   )

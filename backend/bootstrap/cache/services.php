@@ -26,13 +26,14 @@
     22 => 'MongoDB\\Laravel\\MongoDBServiceProvider',
     23 => 'MongoDB\\Laravel\\MongoDBQueueServiceProvider',
     24 => 'MongoDB\\Laravel\\MongoDBBusServiceProvider',
-    25 => 'Carbon\\Laravel\\ServiceProvider',
-    26 => 'Termwind\\Laravel\\TermwindServiceProvider',
-    27 => 'Tymon\\JWTAuth\\Providers\\LaravelServiceProvider',
-    28 => 'MongoDB\\Laravel\\MongoDBServiceProvider',
-    29 => 'Tymon\\JWTAuth\\Providers\\LaravelServiceProvider',
-    30 => 'App\\Providers\\AppServiceProvider',
-    31 => 'App\\Providers\\RouteServiceProvider',
+    25 => 'Laravel\\Tinker\\TinkerServiceProvider',
+    26 => 'Carbon\\Laravel\\ServiceProvider',
+    27 => 'Termwind\\Laravel\\TermwindServiceProvider',
+    28 => 'Tymon\\JWTAuth\\Providers\\LaravelServiceProvider',
+    29 => 'MongoDB\\Laravel\\MongoDBServiceProvider',
+    30 => 'Tymon\\JWTAuth\\Providers\\LaravelServiceProvider',
+    31 => 'App\\Providers\\AppServiceProvider',
+    32 => 'App\\Providers\\RouteServiceProvider',
   ),
   'eager' => 
   array (
@@ -197,6 +198,7 @@
     'validation.presence' => 'Illuminate\\Validation\\ValidationServiceProvider',
     'Illuminate\\Contracts\\Validation\\UncompromisedVerifier' => 'Illuminate\\Validation\\ValidationServiceProvider',
     'MongoDB\\Laravel\\Bus\\MongoBatchRepository' => 'MongoDB\\Laravel\\MongoDBBusServiceProvider',
+    'command.tinker' => 'Laravel\\Tinker\\TinkerServiceProvider',
   ),
   'when' => 
   array (
@@ -240,6 +242,9 @@
     array (
     ),
     'MongoDB\\Laravel\\MongoDBBusServiceProvider' => 
+    array (
+    ),
+    'Laravel\\Tinker\\TinkerServiceProvider' => 
     array (
     ),
   ),

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -37,6 +38,8 @@ class CategoryController extends Controller
             'company_id'  => $companyId,
         ]);
 
+        ActivityLog::log('created', 'category', (string) $category->_id, $category->name);
+
         return response()->json($category, 201);
     }
 
@@ -57,7 +60,18 @@ class CategoryController extends Controller
             'description' => 'nullable|string',
         ]);
 
+        // Check unique name within company, excluding current category
+        if (Category::where('company_id', $companyId)
+            ->where('name', $request->name)
+            ->where('_id', '!=', $id)
+            ->exists()) {
+            return response()->json(['error' => 'Category name already exists'], 422);
+        }
+
         $category->update($request->only('name', 'description'));
+
+        ActivityLog::log('updated', 'category', (string) $category->_id, $category->name);
+
         return response()->json($category);
     }
 
@@ -72,7 +86,12 @@ class CategoryController extends Controller
             ], 422);
         }
 
+        $categoryName = $category->name;
+        $categoryId = (string) $category->_id;
         $category->delete();
+
+        ActivityLog::log('deleted', 'category', $categoryId, $categoryName);
+
         return response()->json(['message' => 'Category deleted']);
     }
 }

@@ -5,7 +5,8 @@ import {
   Chart as ChartJS, CategoryScale, LinearScale, BarElement,
   Title, Tooltip, Legend, ArcElement
 } from 'chart.js'
-import { Package, Tag, TrendingDown, Activity, AlertTriangle, ArrowUp, ArrowDown } from 'lucide-react'
+import { Package, Tag, TrendingDown, Activity, AlertTriangle, ArrowUp, ArrowDown, Calendar } from 'lucide-react'
+import { SkeletonStats, SkeletonTable, Skeleton } from '../components/Skeleton'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement)
 
@@ -30,15 +31,50 @@ function StatCard({ icon: Icon, label, value, color, sub }) {
 export default function Dashboard() {
   const [data, setData]     = useState(null)
   const [loading, setLoading] = useState(true)
+  const [period, setPeriod] = useState('6months')
+  const [customRange, setCustomRange] = useState({ start: '', end: '' })
 
-  useEffect(() => {
-    getDashboard()
+  const loadData = () => {
+    setLoading(true)
+    const params = { period }
+    if (period === 'custom' && customRange.start && customRange.end) {
+      params.start_date = customRange.start
+      params.end_date = customRange.end
+    }
+    getDashboard(params)
       .then(r => setData(r.data))
       .catch(console.error)
       .finally(() => setLoading(false))
-  }, [])
+  }
 
-  if (loading) return <div className="spinner" />
+  useEffect(() => {
+    loadData()
+  }, [period])
+
+  const handleCustomRangeApply = () => {
+    if (customRange.start && customRange.end) {
+      loadData()
+    }
+  }
+
+  if (loading) return (
+    <div className="fade-in" style={{ background: 'var(--bg)' }}>
+      <SkeletonStats count={4} />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: 24, marginTop: 24 }}>
+        <div className="card" style={{ padding: 24 }}>
+          <Skeleton height="1rem" width="40%" style={{ marginBottom: 16 }} />
+          <Skeleton height="200px" />
+        </div>
+        <div className="card" style={{ padding: 24 }}>
+          <Skeleton height="1rem" width="40%" style={{ marginBottom: 16 }} />
+          <Skeleton height="200px" />
+        </div>
+      </div>
+      <div style={{ marginTop: 24 }}>
+        <SkeletonTable rows={5} cols={4} />
+      </div>
+    </div>
+  )
 
   const { stats, low_stock_products, recent_movements, chart_data, top_products } = data
 
@@ -78,11 +114,112 @@ export default function Dashboard() {
 
   return (
     <div className="fade-in">
-      <div className="page-header">
+      <div className="page-header" style={{ marginBottom: 16 }}>
         <h1 className="page-title">Dashboard</h1>
-        <span style={{ color: 'var(--text-muted)', fontSize: 14 }}>
-          {new Date().toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' })}
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <span style={{ color: 'var(--text-muted)', fontSize: 14 }}>
+            {new Date().toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' })}
+          </span>
+        </div>
+      </div>
+
+      {/* Date Range Filter */}
+      <div style={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        gap: 12, 
+        marginBottom: 24, 
+        padding: '12px 16px', 
+        background: 'var(--card)', 
+        borderRadius: 10, 
+        border: '1px solid var(--border)' 
+      }}>
+        <Calendar size={18} style={{ color: 'var(--text-muted)' }} />
+        <span style={{ fontSize: 14, color: 'var(--text-muted)', fontWeight: 500 }}>Period:</span>
+        {['7days', '30days', '3months', '6months', '12months'].map((p) => (
+          <button
+            key={p}
+            onClick={() => setPeriod(p)}
+            style={{
+              padding: '6px 12px',
+              borderRadius: 6,
+              border: 'none',
+              fontSize: 13,
+              fontWeight: 500,
+              cursor: 'pointer',
+              background: period === p ? '#4f46e5' : 'transparent',
+              color: period === p ? 'white' : 'var(--text-muted)',
+              transition: 'all 0.2s'
+            }}
+          >
+            {p === '7days' ? '7 Days' :
+             p === '30days' ? '30 Days' :
+             p === '3months' ? '3 Months' :
+             p === '6months' ? '6 Months' : '12 Months'}
+          </button>
+        ))}
+        <div style={{ borderLeft: '1px solid var(--border)', height: 24, margin: '0 8px' }} />
+        <button
+          onClick={() => setPeriod('custom')}
+          style={{
+            padding: '6px 12px',
+            borderRadius: 6,
+            border: 'none',
+            fontSize: 13,
+            fontWeight: 500,
+            cursor: 'pointer',
+            background: period === 'custom' ? '#4f46e5' : 'transparent',
+            color: period === 'custom' ? 'white' : 'var(--text-muted)',
+          }}
+        >
+          Custom
+        </button>
+        {period === 'custom' && (
+          <>
+            <input
+              type="date"
+              value={customRange.start}
+              onChange={(e) => setCustomRange(r => ({ ...r, start: e.target.value }))}
+              style={{
+                padding: '6px 10px',
+                borderRadius: 6,
+                border: '1px solid var(--border)',
+                fontSize: 13,
+                background: 'var(--input-bg)',
+                color: 'var(--text)'
+              }}
+            />
+            <span style={{ color: 'var(--text-muted)' }}>to</span>
+            <input
+              type="date"
+              value={customRange.end}
+              onChange={(e) => setCustomRange(r => ({ ...r, end: e.target.value }))}
+              style={{
+                padding: '6px 10px',
+                borderRadius: 6,
+                border: '1px solid var(--border)',
+                fontSize: 13,
+                background: 'var(--input-bg)',
+                color: 'var(--text)'
+              }}
+            />
+            <button
+              onClick={handleCustomRangeApply}
+              style={{
+                padding: '6px 12px',
+                borderRadius: 6,
+                border: 'none',
+                fontSize: 13,
+                fontWeight: 500,
+                cursor: 'pointer',
+                background: '#10b981',
+                color: 'white',
+              }}
+            >
+              Apply
+            </button>
+          </>
+        )}
       </div>
 
       {/* Stats Grid */}
@@ -97,7 +234,7 @@ export default function Dashboard() {
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 20, marginBottom: 28 }}>
         <div className="card">
           <div className="card-header">
-            <span className="card-title">Stock Movements (Last 6 Months)</span>
+            <span className="card-title">Stock Movements</span>
           </div>
           <Bar data={barData} options={barOptions} />
         </div>

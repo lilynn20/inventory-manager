@@ -185,4 +185,46 @@ class AuthController extends Controller
             ] : null,
         ]);
     }
+
+    /**
+     * Update current user's profile
+     */
+    public function updateProfile(Request $request)
+    {
+        $user = Auth::user();
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:mongodb.users,email,' . $user->_id . ',_id',
+            'current_password' => 'nullable|required_with:new_password|string',
+            'new_password' => 'nullable|string|min:6|confirmed',
+        ]);
+
+        // Verify current password if changing password
+        if ($request->filled('current_password')) {
+            if (!password_verify($request->current_password, $user->password)) {
+                return response()->json(['error' => 'Current password is incorrect'], 422);
+            }
+        }
+
+        $user->name = $request->name;
+        $user->email = $request->email;
+
+        if ($request->filled('new_password')) {
+            $user->password = $request->new_password;
+        }
+
+        $user->save();
+
+        return response()->json([
+            'message' => 'Profile updated successfully',
+            'user' => [
+                'id'       => $user->id,
+                'name'     => $user->name,
+                'email'    => $user->email,
+                'role'     => $user->role,
+                'is_owner' => $user->is_owner ?? false,
+            ],
+        ]);
+    }
 }
