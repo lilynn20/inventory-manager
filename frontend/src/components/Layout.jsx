@@ -3,9 +3,11 @@ import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import { useKeyboard } from '../context/KeyboardContext'
+import Breadcrumbs from './Breadcrumbs'
+import OnboardingTour, { useOnboarding } from './OnboardingTour'
 import {
   LayoutDashboard, Package, Tag, ArrowLeftRight,
-  LogOut, Users, Truck, TrendingUp, Activity, Bell, Upload, Settings, Moon, Sun, Keyboard, Menu, X, Search
+  LogOut, Users, Truck, TrendingUp, Activity, Bell, Upload, Settings, Moon, Sun, Keyboard, Menu, X, Search, HelpCircle
 } from 'lucide-react'
 
 const navItems = [
@@ -25,6 +27,7 @@ export default function Layout() {
   const { user, logout, isAdmin } = useAuth()
   const { isDark, toggleTheme } = useTheme()
   const { setShowHelp } = useKeyboard()
+  const { showTour, completeTour, startTour } = useOnboarding()
   const navigate = useNavigate()
   const location = useLocation()
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -318,13 +321,38 @@ export default function Layout() {
               </span>
             )}
           </div>
+
+          {/* Help/Tour button */}
+          <button
+            onClick={startTour}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 36,
+              height: 36,
+              borderRadius: 8,
+              border: '1px solid var(--border)',
+              background: 'var(--bg)',
+              color: 'var(--text-muted)',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+            }}
+            title="Start tour"
+          >
+            <HelpCircle size={18} />
+          </button>
         </header>
 
         {/* Content */}
         <div style={{ flex: 1, padding: isMobile ? '16px' : '28px 28px', background: 'var(--bg)' }}>
+          <Breadcrumbs />
           <Outlet />
         </div>
       </main>
+
+      {/* Onboarding Tour */}
+      {showTour && <OnboardingTour onComplete={completeTour} />}
     </div>
   )
 }

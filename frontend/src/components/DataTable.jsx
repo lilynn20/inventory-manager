@@ -1,14 +1,17 @@
 import { useState, useMemo } from 'react'
-import { ChevronUp, ChevronDown, ChevronsUpDown, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronUp, ChevronDown, ChevronsUpDown, ChevronLeft, ChevronRight, Trash2, Download, CheckSquare, Square, MinusSquare } from 'lucide-react'
 
 /**
- * Reusable DataTable with sorting and pagination
+ * Reusable DataTable with sorting, pagination, and bulk selection
  * 
  * @param {Array} columns - Array of { key, label, sortable?, render?, width? }
  * @param {Array} data - Array of data rows
  * @param {number} pageSize - Items per page (default: 10)
  * @param {string} emptyMessage - Message when no data
  * @param {ReactNode} emptyIcon - Icon for empty state
+ * @param {boolean} selectable - Enable row selection (default: false)
+ * @param {Array} bulkActions - Array of { label, icon, onClick, variant } for bulk operations
+ * @param {Function} getRowId - Function to get unique ID from row (default: row._id || row.id)
  */
 export default function DataTable({
   columns,
@@ -17,9 +20,13 @@ export default function DataTable({
   emptyMessage = 'No data found',
   emptyIcon = null,
   onRowClick = null,
+  selectable = false,
+  bulkActions = [],
+  getRowId = (row) => row._id || row.id,
 }) {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' })
   const [currentPage, setCurrentPage] = useState(1)
+  const [selectedIds, setSelectedIds] = useState(new Set())
 
   // Handle sort
   const handleSort = (key) => {
@@ -103,12 +110,118 @@ export default function DataTable({
       : <ChevronDown size={14} />
   }
 
+  // Selection helpers
+  const allPageIds = paginatedData.map(row => getRowId(row))
+  const allSelected = allPageIds.length > 0 && allPageIds.every(id => selectedIds.has(id))
+  const someSelected = allPageIds.some(id => selectedIds.has(id)) && !allSelected
+  const selectedCount = selectedIds.size
+
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      // Deselect all on current page
+      const newSet = new Set(selectedIds)
+      allPageIds.forEach(id => newSet.delete(id))
+      setSelectedIds(newSet)
+    } else {
+      // Select all on current page
+      const newSet = new Set(selectedIds)
+      allPageIds.forEach(id => newSet.add(id))
+      setSelectedIds(newSet)
+    }
+  }
+
+  const toggleSelectRow = (id) => {
+    const newSet = new Set(selectedIds)
+    if (newSet.has(id)) {
+      newSet.delete(id)
+    } else {
+      newSet.add(id)
+    }
+    setSelectedIds(newSet)
+  }
+
+  const clearSelection = () => setSelectedIds(new Set())
+
+  const getSelectedRows = () => data.filter(row => selectedIds.has(getRowId(row)))
+
   return (
     <div>
+      {/* Bulk Action Bar */}
+      {selectable && selectedCount > 0 && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 16,
+          padding: '12px 16px',
+          marginBottom: 16,
+          background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
+          borderRadius: 12,
+          animation: 'slideIn 0.2s ease',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'white' }}>
+            <CheckSquare size={18} />
+            <span style={{ fontWeight: 600 }}>{selectedCount} selected</span>
+          </div>
+          
+          <div style={{ flex: 1 }} />
+          
+          <div style={{ display: 'flex', gap: 8 }}>
+            {bulkActions.map((action, idx) => (
+              <button
+                key={idx}
+                onClick={() => action.onClick(getSelectedRows(), clearSelection)}
+                className={`btn btn-sm ${action.variant === 'danger' ? 'btn-danger' : 'btn-outline'}`}
+                style={{
+                  background: action.variant === 'danger' ? '#ef4444' : 'rgba(255,255,255,0.2)',
+                  borderColor: 'transparent',
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                }}
+              >
+                {action.icon && <action.icon size={14} />}
+                {action.label}
+              </button>
+            ))}
+            <button
+              onClick={clearSelection}
+              className="btn btn-sm btn-outline"
+              style={{
+                background: 'rgba(255,255,255,0.1)',
+                borderColor: 'rgba(255,255,255,0.3)',
+                color: 'white',
+              }}
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="table-container">
         <table>
           <thead>
             <tr>
+              {selectable && (
+                <th style={{ width: 40 }}>
+                  <button
+                    onClick={toggleSelectAll}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: 'var(--text)',
+                      padding: 4,
+                    }}
+                  >
+                    {allSelected ? <CheckSquare size={18} /> : someSelected ? <MinusSquare size={18} /> : <Square size={18} />}
+                  </button>
+                </th>
+              )}
               {columns.map(col => (
                 <th
                   key={col.key}
@@ -130,7 +243,7 @@ export default function DataTable({
           <tbody>
             {paginatedData.length === 0 ? (
               <tr>
-                <td colSpan={columns.length}>
+                <td colSpan={columns.length + (selectable ? 1 : 0)}>
                   <div className="empty-state">
                     {emptyIcon}
                     <p>{emptyMessage}</p>
@@ -138,19 +251,45 @@ export default function DataTable({
                 </td>
               </tr>
             ) : (
-              paginatedData.map((row, idx) => (
-                <tr
-                  key={row._id || row.id || idx}
-                  onClick={() => onRowClick?.(row)}
-                  style={{ cursor: onRowClick ? 'pointer' : 'default' }}
-                >
-                  {columns.map(col => (
-                    <td key={col.key} className={col.hideOnMobile ? 'hide-mobile' : ''}>
-                      {col.render ? col.render(row, startIndex + idx) : row[col.key]}
-                    </td>
-                  ))}
-                </tr>
-              ))
+              paginatedData.map((row, idx) => {
+                const rowId = getRowId(row)
+                const isSelected = selectedIds.has(rowId)
+                return (
+                  <tr
+                    key={rowId || idx}
+                    onClick={() => onRowClick?.(row)}
+                    style={{
+                      cursor: onRowClick ? 'pointer' : 'default',
+                      background: isSelected ? 'rgba(79, 70, 229, 0.1)' : undefined,
+                    }}
+                  >
+                    {selectable && (
+                      <td onClick={(e) => e.stopPropagation()}>
+                        <button
+                          onClick={() => toggleSelectRow(rowId)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            color: isSelected ? '#4f46e5' : 'var(--text-muted)',
+                            padding: 4,
+                          }}
+                        >
+                          {isSelected ? <CheckSquare size={18} /> : <Square size={18} />}
+                        </button>
+                      </td>
+                    )}
+                    {columns.map(col => (
+                      <td key={col.key} className={col.hideOnMobile ? 'hide-mobile' : ''}>
+                        {col.render ? col.render(row, startIndex + idx) : row[col.key]}
+                      </td>
+                    ))}
+                  </tr>
+                )
+              })
             )}
           </tbody>
         </table>

@@ -7,10 +7,11 @@ export default function Login() {
   const { login, loading } = useAuth()
   const [email, setEmail]       = useState('')
   const [password, setPassword] = useState('')
+  const [rememberMe, setRememberMe] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    await login(email, password)
+    await login(email, password, rememberMe)
   }
 
   return (
@@ -190,10 +191,29 @@ export default function Login() {
             </div>
           </div>
 
+          {/* Remember Me */}
+          <label style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            cursor: 'pointer',
+            fontSize: 14,
+            color: '#64748b',
+            marginTop: 4,
+          }}>
+            <input
+              type="checkbox"
+              checked={rememberMe}
+              onChange={e => setRememberMe(e.target.checked)}
+              style={{ width: 16, height: 16, cursor: 'pointer' }}
+            />
+            Remember me for 30 days
+          </label>
+
           <button
             type="submit"
             className="btn btn-primary"
-            style={{ width: '100%', justifyContent: 'center', padding: '13px', fontSize: 15, marginTop: 8 }}
+            style={{ width: '100%', justifyContent: 'center', padding: '13px', fontSize: 15, marginTop: 16 }}
             disabled={loading}
           >
             {loading ? 'Signing in...' : 'Sign In'}

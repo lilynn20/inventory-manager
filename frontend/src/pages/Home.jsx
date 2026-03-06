@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { Package, BarChart3, Users, Shield, ArrowRight, Check, TrendingUp, Bell, ChevronDown, LogOut, LayoutDashboard, User } from 'lucide-react'
+import { Package, BarChart3, Users, Shield, ArrowRight, Check, TrendingUp, Bell, ChevronDown, LogOut, LayoutDashboard, User, ChevronLeft, Star, Zap, Building2, Rocket } from 'lucide-react'
 
 export default function Home() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [profileOpen, setProfileOpen] = useState(false)
+  const [testimonialIndex, setTestimonialIndex] = useState(0)
   const dropdownRef = useRef(null)
 
   // Close dropdown when clicking outside
@@ -63,6 +64,78 @@ export default function Home() {
       color: '#8b5cf6'
     }
   ]
+
+  const stats = [
+    { value: '10,000+', label: 'Active Users' },
+    { value: '99.9%', label: 'Uptime' },
+    { value: '2M+', label: 'Products Tracked' },
+    { value: '50+', label: 'Countries' },
+  ]
+
+  const testimonials = [
+    {
+      quote: "StockFlow transformed how we manage inventory. We reduced stockouts by 80% in just 3 months.",
+      author: "Sarah Johnson",
+      role: "Operations Manager",
+      company: "TechRetail Co",
+      avatar: "SJ",
+    },
+    {
+      quote: "The predictions feature is incredible. It's like having a data scientist on the team 24/7.",
+      author: "Michael Chen",
+      role: "CEO",
+      company: "GrowthMart",
+      avatar: "MC",
+    },
+    {
+      quote: "Finally, an inventory system that's actually easy to use. Our team adopted it in days, not weeks.",
+      author: "Emily Rodriguez",
+      role: "Warehouse Director",
+      company: "FastShip Logistics",
+      avatar: "ER",
+    },
+  ]
+
+  const pricing = [
+    {
+      name: 'Starter',
+      price: 'Free',
+      period: 'forever',
+      description: 'Perfect for small teams getting started',
+      icon: Zap,
+      features: ['Up to 500 products', '3 team members', 'Basic analytics', 'Email support'],
+      cta: 'Start Free',
+      popular: false,
+    },
+    {
+      name: 'Professional',
+      price: '$29',
+      period: '/month',
+      description: 'For growing businesses with more needs',
+      icon: Rocket,
+      features: ['Unlimited products', '10 team members', 'Advanced analytics', 'AI predictions', 'Priority support', 'API access'],
+      cta: 'Start Trial',
+      popular: true,
+    },
+    {
+      name: 'Enterprise',
+      price: '$99',
+      period: '/month',
+      description: 'For large organizations with complex needs',
+      icon: Building2,
+      features: ['Everything in Pro', 'Unlimited team members', 'Custom integrations', 'Dedicated support', 'SLA guarantee', 'On-premise option'],
+      cta: 'Contact Sales',
+      popular: false,
+    },
+  ]
+
+  // Auto-rotate testimonials
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTestimonialIndex(prev => (prev + 1) % testimonials.length)
+    }, 5000)
+    return () => clearInterval(timer)
+  }, [testimonials.length])
 
   return (
     <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4f46e5 100%)' }}>
@@ -277,6 +350,198 @@ export default function Home() {
                 </div>
                 <h3 style={{ fontSize: 18, fontWeight: 700, color: 'white', marginBottom: 8 }}>{feature.title}</h3>
                 <p style={{ color: 'rgba(255,255,255,0.6)', lineHeight: 1.6 }}>{feature.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section style={{ padding: '60px 24px', background: 'linear-gradient(135deg, rgba(79,70,229,0.3), rgba(139,92,246,0.3))' }}>
+        <div style={{ maxWidth: 1000, margin: '0 auto' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 32, textAlign: 'center' }}>
+            {stats.map((stat, index) => (
+              <div key={index}>
+                <div style={{ fontSize: 48, fontWeight: 900, color: 'white', marginBottom: 8 }}>{stat.value}</div>
+                <div style={{ fontSize: 16, color: 'rgba(255,255,255,0.7)', fontWeight: 500 }}>{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section style={{ padding: '80px 24px', background: 'rgba(255,255,255,0.02)' }}>
+        <div style={{ maxWidth: 800, margin: '0 auto', textAlign: 'center' }}>
+          <h2 style={{ fontSize: 32, fontWeight: 800, color: 'white', marginBottom: 50 }}>
+            Trusted by Growing Businesses
+          </h2>
+          
+          <div style={{ position: 'relative', minHeight: 200 }}>
+            {testimonials.map((testimonial, index) => (
+              <div
+                key={index}
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  opacity: index === testimonialIndex ? 1 : 0,
+                  transform: index === testimonialIndex ? 'translateX(0)' : 'translateX(20px)',
+                  transition: 'all 0.5s ease',
+                  pointerEvents: index === testimonialIndex ? 'auto' : 'none',
+                }}
+              >
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  marginBottom: 20,
+                }}>
+                  {[1,2,3,4,5].map(star => (
+                    <Star key={star} size={20} fill="#fbbf24" color="#fbbf24" />
+                  ))}
+                </div>
+                <blockquote style={{
+                  fontSize: 24,
+                  color: 'white',
+                  fontWeight: 500,
+                  lineHeight: 1.5,
+                  marginBottom: 30,
+                  fontStyle: 'italic',
+                }}>
+                  "{testimonial.quote}"
+                </blockquote>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+                  <div style={{
+                    width: 50,
+                    height: 50,
+                    borderRadius: '50%',
+                    background: '#4f46e5',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 700,
+                    color: 'white',
+                  }}>
+                    {testimonial.avatar}
+                  </div>
+                  <div style={{ textAlign: 'left' }}>
+                    <div style={{ fontWeight: 700, color: 'white' }}>{testimonial.author}</div>
+                    <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)' }}>{testimonial.role} at {testimonial.company}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Carousel dots */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 40 }}>
+            {testimonials.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setTestimonialIndex(index)}
+                style={{
+                  width: index === testimonialIndex ? 32 : 10,
+                  height: 10,
+                  borderRadius: 5,
+                  background: index === testimonialIndex ? '#4f46e5' : 'rgba(255,255,255,0.3)',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section style={{ padding: '80px 24px', background: 'rgba(255,255,255,0.05)' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 50 }}>
+            <h2 style={{ fontSize: 36, fontWeight: 800, color: 'white', marginBottom: 16 }}>
+              Simple, Transparent Pricing
+            </h2>
+            <p style={{ fontSize: 18, color: 'rgba(255,255,255,0.6)' }}>
+              Start free, upgrade when you're ready
+            </p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24 }}>
+            {pricing.map((plan, index) => (
+              <div
+                key={index}
+                style={{
+                  background: plan.popular ? 'linear-gradient(135deg, #4f46e5, #7c3aed)' : 'rgba(255,255,255,0.08)',
+                  borderRadius: 20,
+                  padding: 32,
+                  border: plan.popular ? 'none' : '1px solid rgba(255,255,255,0.1)',
+                  position: 'relative',
+                  transform: plan.popular ? 'scale(1.05)' : 'scale(1)',
+                }}
+              >
+                {plan.popular && (
+                  <div style={{
+                    position: 'absolute',
+                    top: -12,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    background: '#fbbf24',
+                    color: '#1e1b4b',
+                    padding: '4px 16px',
+                    borderRadius: 20,
+                    fontSize: 12,
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                  }}>
+                    Most Popular
+                  </div>
+                )}
+
+                <div style={{
+                  width: 50,
+                  height: 50,
+                  borderRadius: 12,
+                  background: plan.popular ? 'rgba(255,255,255,0.2)' : 'rgba(79,70,229,0.2)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: 20,
+                }}>
+                  <plan.icon size={24} color={plan.popular ? 'white' : '#4f46e5'} />
+                </div>
+
+                <h3 style={{ fontSize: 24, fontWeight: 700, color: 'white', marginBottom: 8 }}>{plan.name}</h3>
+                <div style={{ marginBottom: 8 }}>
+                  <span style={{ fontSize: 40, fontWeight: 900, color: 'white' }}>{plan.price}</span>
+                  <span style={{ fontSize: 16, color: 'rgba(255,255,255,0.6)' }}>{plan.period}</span>
+                </div>
+                <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', marginBottom: 24 }}>{plan.description}</p>
+
+                <ul style={{ listStyle: 'none', padding: 0, marginBottom: 28 }}>
+                  {plan.features.map((feature, fIndex) => (
+                    <li key={fIndex} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, color: 'rgba(255,255,255,0.8)' }}>
+                      <Check size={18} color={plan.popular ? '#a5b4fc' : '#4f46e5'} />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+
+                <Link
+                  to="/register"
+                  style={{
+                    display: 'block',
+                    textAlign: 'center',
+                    padding: '14px 24px',
+                    borderRadius: 10,
+                    fontWeight: 700,
+                    fontSize: 15,
+                    background: plan.popular ? 'white' : 'rgba(79,70,229,0.3)',
+                    color: plan.popular ? '#4f46e5' : 'white',
+                    textDecoration: 'none',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  {plan.cta}
+                </Link>
               </div>
             ))}
           </div>

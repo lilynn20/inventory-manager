@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { getDashboard } from '../services/api'
+import { useAuth } from '../context/AuthContext'
 import { Bar, Doughnut } from 'react-chartjs-2'
 import {
   Chart as ChartJS, CategoryScale, LinearScale, BarElement,
   Title, Tooltip, Legend, ArcElement
 } from 'chart.js'
-import { Package, Tag, TrendingDown, Activity, AlertTriangle, ArrowUp, ArrowDown, Calendar } from 'lucide-react'
+import { Package, Tag, TrendingDown, Activity, AlertTriangle, ArrowUp, ArrowDown, Calendar, Plus, ArrowLeftRight, Upload, Users, Sparkles } from 'lucide-react'
 import { SkeletonStats, SkeletonTable, Skeleton } from '../components/Skeleton'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement)
@@ -29,10 +31,26 @@ function StatCard({ icon: Icon, label, value, color, sub }) {
 }
 
 export default function Dashboard() {
+  const { user, isAdmin } = useAuth()
   const [data, setData]     = useState(null)
   const [loading, setLoading] = useState(true)
   const [period, setPeriod] = useState('6months')
   const [customRange, setCustomRange] = useState({ start: '', end: '' })
+  const [bannerDismissed, setBannerDismissed] = useState(() => {
+    return sessionStorage.getItem('welcomeBannerDismissed') === 'true'
+  })
+
+  const dismissBanner = () => {
+    setBannerDismissed(true)
+    sessionStorage.setItem('welcomeBannerDismissed', 'true')
+  }
+
+  const quickActions = [
+    { icon: Plus, label: 'Add Product', to: '/dashboard/products', color: '#4f46e5' },
+    { icon: ArrowLeftRight, label: 'Stock Movement', to: '/dashboard/movements', color: '#10b981' },
+    { icon: Tag, label: 'New Category', to: '/dashboard/categories', color: '#f59e0b' },
+    ...(isAdmin ? [{ icon: Users, label: 'Manage Team', to: '/dashboard/employees', color: '#3b82f6' }] : []),
+  ]
 
   const loadData = () => {
     setLoading(true)
@@ -114,6 +132,101 @@ export default function Dashboard() {
 
   return (
     <div className="fade-in">
+      {/* Welcome Banner */}
+      {!bannerDismissed && (
+        <div style={{
+          background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #9333ea 100%)',
+          borderRadius: 16,
+          padding: '24px 28px',
+          marginBottom: 24,
+          position: 'relative',
+          overflow: 'hidden',
+        }}>
+          {/* Decorative elements */}
+          <div style={{
+            position: 'absolute',
+            top: -50,
+            right: -50,
+            width: 200,
+            height: 200,
+            borderRadius: '50%',
+            background: 'rgba(255,255,255,0.1)',
+          }} />
+          <div style={{
+            position: 'absolute',
+            bottom: -30,
+            right: 100,
+            width: 100,
+            height: 100,
+            borderRadius: '50%',
+            background: 'rgba(255,255,255,0.08)',
+          }} />
+          
+          <button
+            onClick={dismissBanner}
+            style={{
+              position: 'absolute',
+              top: 12,
+              right: 12,
+              background: 'rgba(255,255,255,0.2)',
+              border: 'none',
+              borderRadius: 6,
+              padding: '4px 8px',
+              color: 'white',
+              fontSize: 12,
+              cursor: 'pointer',
+            }}
+          >
+            Dismiss
+          </button>
+
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+              <Sparkles size={20} color="#fbbf24" />
+              <span style={{ color: '#fbbf24', fontSize: 13, fontWeight: 600 }}>
+                {new Date().getHours() < 12 ? 'Good Morning' : new Date().getHours() < 18 ? 'Good Afternoon' : 'Good Evening'}
+              </span>
+            </div>
+            <h2 style={{ fontSize: 26, fontWeight: 800, color: 'white', marginBottom: 8 }}>
+              Welcome back, {user?.name?.split(' ')[0]}!
+            </h2>
+            <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: 15, marginBottom: 20 }}>
+              Here's what's happening with your inventory today. You have{' '}
+              <strong style={{ color: '#fbbf24' }}>{data?.stats?.low_stock_count || 0} items</strong> that need restocking.
+            </p>
+
+            {/* Quick Actions */}
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              {quickActions.map((action, index) => (
+                <Link
+                  key={index}
+                  to={action.to}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    padding: '10px 16px',
+                    background: 'rgba(255,255,255,0.2)',
+                    borderRadius: 10,
+                    color: 'white',
+                    textDecoration: 'none',
+                    fontSize: 14,
+                    fontWeight: 600,
+                    backdropFilter: 'blur(10px)',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.3)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
+                >
+                  <action.icon size={16} />
+                  {action.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="page-header" style={{ marginBottom: 16 }}>
         <h1 className="page-title">Dashboard</h1>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>

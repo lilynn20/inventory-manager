@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { User, Mail, Lock, Save, Shield, Building2 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { updateProfile } from '../services/api'
+import AvatarUpload from '../components/AvatarUpload'
 import toast from 'react-hot-toast'
 
 export default function Profile() {
@@ -89,23 +90,16 @@ export default function Profile() {
           borderBottom: '1px solid var(--border)',
           display: 'flex',
           alignItems: 'center',
-          gap: 16,
+          gap: 20,
         }}>
-          <div style={{
-            width: 72,
-            height: 72,
-            borderRadius: '50%',
-            background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontSize: 28,
-            fontWeight: 700,
-            flexShrink: 0,
-          }}>
-            {user?.name?.charAt(0)?.toUpperCase() || 'U'}
-          </div>
+          <AvatarUpload
+            currentInitials={user?.name?.charAt(0)?.toUpperCase() || 'U'}
+            size={80}
+            onUpload={async (base64Image) => {
+              // For now, just show a toast - actual upload would require backend support
+              toast.success('Avatar feature coming soon!')
+            }}
+          />
           <div>
             <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text)', marginBottom: 6 }}>
               {user?.name}
