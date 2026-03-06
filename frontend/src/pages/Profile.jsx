@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { User, Mail, Lock, Save, Loader2, Shield, Building2 } from 'lucide-react'
+import { User, Mail, Lock, Save, Shield, Building2 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { updateProfile } from '../services/api'
 import toast from 'react-hot-toast'
@@ -47,11 +47,9 @@ export default function Profile() {
 
       const { data } = await updateProfile(payload)
       
-      // Update local user state
       setUser(data.user)
       localStorage.setItem('user', JSON.stringify(data.user))
       
-      // Clear password fields
       setForm({
         ...form,
         current_password: '',
@@ -69,34 +67,73 @@ export default function Profile() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="fade-in" style={{ maxWidth: 700, margin: '0 auto' }}>
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <User className="w-7 h-7" />
-          Profile Settings
-        </h1>
-        <p className="text-gray-500 mt-1">Manage your account information and security</p>
+      <div className="page-header" style={{ marginBottom: 24 }}>
+        <div>
+          <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <User size={28} />
+            Profile Settings
+          </h1>
+          <p style={{ color: 'var(--text-muted)', marginTop: 4, fontSize: 14 }}>
+            Manage your account information and security
+          </p>
+        </div>
       </div>
 
       {/* User Info Card */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <div className="flex items-center gap-4 mb-6">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+      <div className="card" style={{ padding: 0 }}>
+        {/* Profile Header */}
+        <div style={{
+          padding: 24,
+          borderBottom: '1px solid var(--border)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 16,
+        }}>
+          <div style={{
+            width: 72,
+            height: 72,
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+            fontSize: 28,
+            fontWeight: 700,
+            flexShrink: 0,
+          }}>
             {user?.name?.charAt(0)?.toUpperCase() || 'U'}
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">{user?.name}</h2>
-            <div className="flex items-center gap-3 mt-1">
-              <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full ${
-                user?.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700'
-              }`}>
-                <Shield className="w-3 h-3" />
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text)', marginBottom: 6 }}>
+              {user?.name}
+            </h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 4,
+                padding: '4px 10px',
+                fontSize: 12,
+                fontWeight: 600,
+                borderRadius: 6,
+                background: user?.role === 'admin' ? 'rgba(79, 70, 229, 0.15)' : 'rgba(107, 114, 128, 0.15)',
+                color: user?.role === 'admin' ? '#4f46e5' : '#6b7280',
+              }}>
+                <Shield size={12} />
                 {user?.role === 'admin' ? 'Administrator' : 'Employee'}
               </span>
               {user?.company && (
-                <span className="inline-flex items-center gap-1 text-xs text-gray-500">
-                  <Building2 className="w-3 h-3" />
+                <span style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  fontSize: 13,
+                  color: 'var(--text-muted)',
+                }}>
+                  <Building2 size={14} />
                   {user.company.name}
                 </span>
               )}
@@ -104,122 +141,143 @@ export default function Profile() {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Name */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Full Name
-            </label>
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                required
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
+        {/* Form */}
+        <form onSubmit={handleSubmit}>
+          <div style={{ padding: 24 }}>
+            <h3 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)', marginBottom: 16 }}>
+              Account Information
+            </h3>
+            
+            <div style={{ display: 'grid', gap: 16 }}>
+              {/* Name */}
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label>Full Name</label>
+                <div style={{ position: 'relative' }}>
+                  <User size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                  <input
+                    type="text"
+                    name="name"
+                    className="form-control"
+                    style={{ paddingLeft: 38 }}
+                    value={form.name}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Email */}
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label>Email Address</label>
+                <div style={{ position: 'relative' }}>
+                  <Mail size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                  <input
+                    type="email"
+                    name="email"
+                    className="form-control"
+                    style={{ paddingLeft: 38 }}
+                    value={form.email}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Password Section */}
+            <div style={{ marginTop: 32 }}>
+              <h3 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>
+                Change Password
+              </h3>
+              <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>
+                Leave blank to keep your current password
+              </p>
+
+              <div style={{ display: 'grid', gap: 16 }}>
+                {/* Current Password */}
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label>Current Password</label>
+                  <div style={{ position: 'relative' }}>
+                    <Lock size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                    <input
+                      type="password"
+                      name="current_password"
+                      className="form-control"
+                      style={{ paddingLeft: 38 }}
+                      value={form.current_password}
+                      onChange={handleChange}
+                      placeholder="Enter current password"
+                    />
+                  </div>
+                </div>
+
+                {/* New Password */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label>New Password</label>
+                    <div style={{ position: 'relative' }}>
+                      <Lock size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                      <input
+                        type="password"
+                        name="new_password"
+                        className="form-control"
+                        style={{ paddingLeft: 38 }}
+                        value={form.new_password}
+                        onChange={handleChange}
+                        minLength={6}
+                        placeholder="New password"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label>Confirm Password</label>
+                    <div style={{ position: 'relative' }}>
+                      <Lock size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                      <input
+                        type="password"
+                        name="new_password_confirmation"
+                        className="form-control"
+                        style={{ paddingLeft: 38 }}
+                        value={form.new_password_confirmation}
+                        onChange={handleChange}
+                        minLength={6}
+                        placeholder="Confirm new password"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Email */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email Address
-            </label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="email"
-                name="email"
-                value={form.email}
-                onChange={handleChange}
-                required
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
+          {/* Footer */}
+          <div style={{
+            padding: '16px 24px',
+            borderTop: '1px solid var(--border)',
+            background: 'var(--bg-secondary)',
+            display: 'flex',
+            justifyContent: 'flex-end',
+          }}>
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={loading}
+              style={{ minWidth: 140 }}
+            >
+              {loading ? (
+                <>
+                  <div className="spinner" style={{ width: 16, height: 16, borderWidth: 2 }} />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save size={16} />
+                  Save Changes
+                </>
+              )}
+            </button>
           </div>
-
-          <hr className="my-6" />
-
-          <h3 className="font-medium text-gray-900">Change Password</h3>
-          <p className="text-sm text-gray-500 -mt-3">Leave blank to keep your current password</p>
-
-          {/* Current Password */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Current Password
-            </label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="password"
-                name="current_password"
-                value={form.current_password}
-                onChange={handleChange}
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter current password"
-              />
-            </div>
-          </div>
-
-          {/* New Password */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              New Password
-            </label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="password"
-                name="new_password"
-                value={form.new_password}
-                onChange={handleChange}
-                minLength={6}
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter new password"
-              />
-            </div>
-          </div>
-
-          {/* Confirm New Password */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Confirm New Password
-            </label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="password"
-                name="new_password_confirmation"
-                value={form.new_password_confirmation}
-                onChange={handleChange}
-                minLength={6}
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Confirm new password"
-              />
-            </div>
-          </div>
-
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save className="w-5 h-5" />
-                Save Changes
-              </>
-            )}
-          </button>
         </form>
       </div>
     </div>
