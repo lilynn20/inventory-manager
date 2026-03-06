@@ -141,7 +141,18 @@ export default function Layout() {
           justifyContent: sidebarCollapsed && !isMobile ? 'center' : 'space-between',
           minHeight: 72,
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <NavLink 
+            to="/" 
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 12, 
+              textDecoration: 'none',
+              color: 'inherit',
+              transition: 'opacity 0.2s',
+            }}
+            title="Go to homepage"
+          >
             <div style={{
               width: 40, height: 40, borderRadius: 12,
               background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)', 
@@ -157,7 +168,7 @@ export default function Layout() {
                 <div style={{ fontSize: 11, opacity: 0.5, fontWeight: 500 }}>Management System</div>
               </div>
             )}
-          </div>
+          </NavLink>
           {isMobile && (
             <button
               onClick={() => setSidebarOpen(false)}
