@@ -1,8 +1,8 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 import { ChevronUp, ChevronDown, ChevronsUpDown, ChevronLeft, ChevronRight, Trash2, Download, CheckSquare, Square, MinusSquare } from 'lucide-react'
 
 /**
- * Reusable DataTable with sorting, pagination, and bulk selection
+ * Reusable DataTable with sorting, pagination, bulk selection, and keyboard navigation
  * 
  * @param {Array} columns - Array of { key, label, sortable?, render?, width? }
  * @param {Array} data - Array of data rows
@@ -12,6 +12,7 @@ import { ChevronUp, ChevronDown, ChevronsUpDown, ChevronLeft, ChevronRight, Tras
  * @param {boolean} selectable - Enable row selection (default: false)
  * @param {Array} bulkActions - Array of { label, icon, onClick, variant } for bulk operations
  * @param {Function} getRowId - Function to get unique ID from row (default: row._id || row.id)
+ * @param {boolean} keyboardNav - Enable keyboard navigation (default: true)
  */
 export default function DataTable({
   columns,
@@ -23,10 +24,75 @@ export default function DataTable({
   selectable = false,
   bulkActions = [],
   getRowId = (row) => row._id || row.id,
+  keyboardNav = true,
 }) {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' })
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedIds, setSelectedIds] = useState(new Set())
+  const [focusedRowIndex, setFocusedRowIndex] = useState(-1)
+  const tableRef = useRef(null)
+  const rowRefs = useRef([])
+
+  // Keyboard navigation
+  useEffect(() => {
+    if (!keyboardNav) return
+
+    const handleKeyDown = (e) => {
+      // Only handle if table or its children are focused
+      if (!tableRef.current?.contains(document.activeElement)) return
+
+      switch (e.key) {
+        case 'ArrowDown':
+          e.preventDefault()
+          setFocusedRowIndex(prev => Math.min(prev + 1, paginatedData.length - 1))
+          break
+        case 'ArrowUp':
+          e.preventDefault()
+          setFocusedRowIndex(prev => Math.max(prev - 1, 0))
+          break
+        case 'Enter':
+          if (focusedRowIndex >= 0 && paginatedData[focusedRowIndex]) {
+            onRowClick?.(paginatedData[focusedRowIndex])
+          }
+          break
+        case ' ':
+          if (selectable && focusedRowIndex >= 0) {
+            e.preventDefault()
+            const row = paginatedData[focusedRowIndex]
+            if (row) toggleSelectRow(getRowId(row))
+          }
+          break
+        case 'Home':
+          e.preventDefault()
+          setFocusedRowIndex(0)
+          break
+        case 'End':
+          e.preventDefault()
+          setFocusedRowIndex(paginatedData.length - 1)
+          break
+        case 'PageDown':
+          e.preventDefault()
+          goToPage(currentPage + 1)
+          setFocusedRowIndex(0)
+          break
+        case 'PageUp':
+          e.preventDefault()
+          goToPage(currentPage - 1)
+          setFocusedRowIndex(0)
+          break
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [keyboardNav, focusedRowIndex, currentPage, selectable])
+
+  // Focus the row when focusedRowIndex changes
+  useEffect(() => {
+    if (focusedRowIndex >= 0 && rowRefs.current[focusedRowIndex]) {
+      rowRefs.current[focusedRowIndex].focus()
+    }
+  }, [focusedRowIndex])
 
   // Handle sort
   const handleSort = (key) => {
@@ -199,7 +265,7 @@ export default function DataTable({
         </div>
       )}
 
-      <div className="table-container">
+      <div className="table-container" ref={tableRef}>
         <table>
           <thead>
             <tr>
@@ -254,13 +320,27 @@ export default function DataTable({
               paginatedData.map((row, idx) => {
                 const rowId = getRowId(row)
                 const isSelected = selectedIds.has(rowId)
+                const isFocused = idx === focusedRowIndex
                 return (
                   <tr
                     key={rowId || idx}
-                    onClick={() => onRowClick?.(row)}
+                    ref={el => rowRefs.current[idx] = el}
+                    tabIndex={keyboardNav ? 0 : undefined}
+                    onClick={() => {
+                      setFocusedRowIndex(idx)
+                      onRowClick?.(row)
+                    }}
+                    onFocus={() => setFocusedRowIndex(idx)}
                     style={{
                       cursor: onRowClick ? 'pointer' : 'default',
-                      background: isSelected ? 'rgba(79, 70, 229, 0.1)' : undefined,
+                      background: isSelected 
+                        ? 'rgba(79, 70, 229, 0.1)' 
+                        : isFocused 
+                          ? 'rgba(79, 70, 229, 0.05)' 
+                          : undefined,
+                      outline: isFocused ? '2px solid #4f46e5' : 'none',
+                      outlineOffset: -2,
+                      transition: 'background 0.1s, outline 0.1s',
                     }}
                   >
                     {selectable && (
