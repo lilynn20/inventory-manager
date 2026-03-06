@@ -7,9 +7,44 @@ import Breadcrumbs from './Breadcrumbs'
 import OnboardingTour, { useOnboarding } from './OnboardingTour'
 import {
   LayoutDashboard, Package, Tag, ArrowLeftRight,
-  LogOut, Users, Truck, TrendingUp, Activity, Bell, Upload, Settings, Moon, Sun, Keyboard, Menu, X, Search, HelpCircle
+  LogOut, Users, Truck, TrendingUp, Activity, Bell, Upload, Settings, Moon, Sun, Keyboard, Menu, X, Search, HelpCircle, ChevronLeft, ChevronRight
 } from 'lucide-react'
 
+const navSections = [
+  {
+    label: 'Overview',
+    items: [
+      { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    ]
+  },
+  {
+    label: 'Inventory',
+    items: [
+      { to: '/dashboard/products', icon: Package, label: 'Products' },
+      { to: '/dashboard/categories', icon: Tag, label: 'Categories' },
+      { to: '/dashboard/suppliers', icon: Truck, label: 'Suppliers' },
+      { to: '/dashboard/movements', icon: ArrowLeftRight, label: 'Stock Movements' },
+    ]
+  },
+  {
+    label: 'Analytics',
+    items: [
+      { to: '/dashboard/predictions', icon: TrendingUp, label: 'Predictions' },
+    ]
+  },
+  {
+    label: 'Administration',
+    adminOnly: true,
+    items: [
+      { to: '/dashboard/employees', icon: Users, label: 'Team' },
+      { to: '/dashboard/activity-logs', icon: Activity, label: 'Activity Logs' },
+      { to: '/dashboard/notifications', icon: Bell, label: 'Notifications' },
+      { to: '/dashboard/import', icon: Upload, label: 'Import Data' },
+    ]
+  },
+]
+
+// Keep flat array for backward compatibility
 const navItems = [
   { to: '/dashboard',             icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/dashboard/products',    icon: Package,         label: 'Products' },
@@ -31,7 +66,13 @@ export default function Layout() {
   const navigate = useNavigate()
   const location = useLocation()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    return localStorage.getItem('sidebarCollapsed') === 'true'
+  })
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024)
+  const [hoveredItem, setHoveredItem] = useState(null)
+
+  const sidebarWidth = sidebarCollapsed && !isMobile ? 72 : 260
 
   // Handle resize
   useEffect(() => {
@@ -48,6 +89,13 @@ export default function Layout() {
   useEffect(() => {
     if (isMobile) setSidebarOpen(false)
   }, [location.pathname, isMobile])
+
+  // Persist collapsed state
+  const toggleSidebarCollapse = () => {
+    const newState = !sidebarCollapsed
+    setSidebarCollapsed(newState)
+    localStorage.setItem('sidebarCollapsed', String(newState))
+  }
 
   const handleLogout = async () => {
     await logout()
@@ -72,8 +120,8 @@ export default function Layout() {
 
       {/* Sidebar */}
       <aside style={{
-        width: 260,
-        background: '#1e1b4b',
+        width: sidebarWidth,
+        background: 'linear-gradient(180deg, #1e1b4b 0%, #0f172a 100%)',
         color: 'white',
         display: 'flex',
         flexDirection: 'column',
@@ -81,96 +129,248 @@ export default function Layout() {
         top: 0, left: 0, bottom: 0,
         zIndex: 100,
         transform: isMobile ? (sidebarOpen ? 'translateX(0)' : 'translateX(-100%)') : 'translateX(0)',
-        transition: 'transform 0.3s ease',
+        transition: 'transform 0.3s ease, width 0.3s ease',
+        boxShadow: '4px 0 24px rgba(0,0,0,0.15)',
       }}>
         {/* Logo */}
-        <div style={{ padding: '24px 20px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ 
+          padding: sidebarCollapsed && !isMobile ? '20px 12px' : '20px', 
+          borderBottom: '1px solid rgba(255,255,255,0.08)', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: sidebarCollapsed && !isMobile ? 'center' : 'space-between',
+          minHeight: 72,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{
-              width: 36, height: 36, borderRadius: 10,
-              background: '#4f46e5', display: 'flex', alignItems: 'center', justifyContent: 'center'
+              width: 40, height: 40, borderRadius: 12,
+              background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)', 
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 4px 12px rgba(79, 70, 229, 0.4)',
+              flexShrink: 0,
             }}>
-              <Package size={20} />
+              <Package size={22} />
             </div>
-            <div>
-              <div style={{ fontWeight: 800, fontSize: 16 }}>Inventory</div>
-              <div style={{ fontSize: 11, opacity: 0.6 }}>Management System</div>
-            </div>
+            {(!sidebarCollapsed || isMobile) && (
+              <div style={{ overflow: 'hidden' }}>
+                <div style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em' }}>Inventory</div>
+                <div style={{ fontSize: 11, opacity: 0.5, fontWeight: 500 }}>Management System</div>
+              </div>
+            )}
           </div>
           {isMobile && (
             <button
               onClick={() => setSidebarOpen(false)}
-              style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: 4 }}
+              style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', cursor: 'pointer', padding: 6, borderRadius: 6 }}
             >
-              <X size={20} />
+              <X size={18} />
             </button>
           )}
         </div>
 
         {/* Nav */}
-        <nav style={{ flex: 1, padding: '16px 12px', overflowY: 'auto' }}>
-          {navItems
-            .filter(item => !item.adminOnly || isAdmin)
-            .map(({ to, icon: Icon, label }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={to === '/dashboard'}
-              style={({ isActive }) => ({
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-                padding: '10px 14px',
-                borderRadius: 10,
-                marginBottom: 4,
-                fontSize: 14,
-                fontWeight: 600,
-                transition: 'all 0.2s',
-                background: isActive ? 'rgba(79,70,229,0.8)' : 'transparent',
-                color: isActive ? 'white' : 'rgba(255,255,255,0.65)',
-              })}
-            >
-              <Icon size={18} />
-              {label}
-            </NavLink>
-          ))}
+        <nav style={{ flex: 1, padding: sidebarCollapsed && !isMobile ? '16px 8px' : '16px 12px', overflowY: 'auto', overflowX: 'hidden' }}>
+          {navSections
+            .filter(section => !section.adminOnly || isAdmin)
+            .map((section, sectionIndex) => (
+              <div key={section.label} style={{ marginBottom: 20 }}>
+                {/* Section Label */}
+                {(!sidebarCollapsed || isMobile) && (
+                  <div style={{
+                    fontSize: 10,
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.08em',
+                    color: 'rgba(255,255,255,0.35)',
+                    padding: '0 14px',
+                    marginBottom: 8,
+                  }}>
+                    {section.label}
+                  </div>
+                )}
+                {sidebarCollapsed && !isMobile && sectionIndex > 0 && (
+                  <div style={{ 
+                    height: 1, 
+                    background: 'rgba(255,255,255,0.08)', 
+                    margin: '0 8px 12px',
+                  }} />
+                )}
+                
+                {/* Section Items */}
+                {section.items.map(({ to, icon: Icon, label }) => (
+                  <NavLink
+                    key={to}
+                    to={to}
+                    end={to === '/dashboard'}
+                    onMouseEnter={() => setHoveredItem(to)}
+                    onMouseLeave={() => setHoveredItem(null)}
+                    style={({ isActive }) => ({
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: sidebarCollapsed && !isMobile ? 'center' : 'flex-start',
+                      gap: 12,
+                      padding: sidebarCollapsed && !isMobile ? '12px' : '11px 14px',
+                      borderRadius: 10,
+                      marginBottom: 4,
+                      fontSize: 14,
+                      fontWeight: 600,
+                      transition: 'all 0.2s ease',
+                      background: isActive 
+                        ? 'linear-gradient(90deg, rgba(99,102,241,0.9) 0%, rgba(79,70,229,0.9) 100%)' 
+                        : hoveredItem === to 
+                          ? 'rgba(255,255,255,0.08)' 
+                          : 'transparent',
+                      color: isActive ? 'white' : 'rgba(255,255,255,0.65)',
+                      position: 'relative',
+                      textDecoration: 'none',
+                      boxShadow: isActive ? '0 4px 12px rgba(79, 70, 229, 0.3)' : 'none',
+                    })}
+                    title={sidebarCollapsed && !isMobile ? label : undefined}
+                  >
+                    {({ isActive }) => (
+                      <>
+                        {isActive && (
+                          <div style={{
+                            position: 'absolute',
+                            left: sidebarCollapsed && !isMobile ? '50%' : 0,
+                            transform: sidebarCollapsed && !isMobile ? 'translateX(-50%)' : 'none',
+                            bottom: sidebarCollapsed && !isMobile ? -2 : 'auto',
+                            top: sidebarCollapsed && !isMobile ? 'auto' : '50%',
+                            marginTop: sidebarCollapsed && !isMobile ? 0 : -10,
+                            width: sidebarCollapsed && !isMobile ? 20 : 3,
+                            height: sidebarCollapsed && !isMobile ? 3 : 20,
+                            background: 'white',
+                            borderRadius: 2,
+                            boxShadow: '0 0 8px rgba(255,255,255,0.5)',
+                          }} />
+                        )}
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: 22,
+                          height: 22,
+                          flexShrink: 0,
+                        }}>
+                          <Icon size={19} strokeWidth={isActive ? 2.5 : 2} />
+                        </div>
+                        {(!sidebarCollapsed || isMobile) && (
+                          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {label}
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </NavLink>
+                ))}
+              </div>
+            ))}
         </nav>
 
+        {/* Collapse Toggle (Desktop only) */}
+        {!isMobile && (
+          <button
+            onClick={toggleSidebarCollapse}
+            style={{
+              position: 'absolute',
+              right: -12,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              width: 24,
+              height: 24,
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+              border: '2px solid var(--bg)',
+              color: 'white',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+              transition: 'transform 0.2s',
+            }}
+            onMouseEnter={(e) => e.target.style.transform = 'translateY(-50%) scale(1.1)'}
+            onMouseLeave={(e) => e.target.style.transform = 'translateY(-50%)'}
+            title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            {sidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+          </button>
+        )}
+
         {/* User */}
-        <div style={{ padding: '16px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+        <div style={{ 
+          padding: sidebarCollapsed && !isMobile ? '12px 8px' : '16px', 
+          borderTop: '1px solid rgba(255,255,255,0.08)',
+          background: 'rgba(0,0,0,0.15)',
+        }}>
           <NavLink
             to="/dashboard/profile"
             style={({ isActive }) => ({
-              display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12,
-              padding: '8px', borderRadius: 8, textDecoration: 'none',
-              background: isActive ? 'rgba(79,70,229,0.8)' : 'transparent',
-              transition: 'background 0.2s'
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 10, 
+              marginBottom: sidebarCollapsed && !isMobile ? 8 : 12,
+              padding: sidebarCollapsed && !isMobile ? '8px' : '10px 12px', 
+              borderRadius: 10, 
+              textDecoration: 'none',
+              justifyContent: sidebarCollapsed && !isMobile ? 'center' : 'flex-start',
+              background: isActive ? 'rgba(99,102,241,0.25)' : 'rgba(255,255,255,0.05)',
+              border: '1px solid',
+              borderColor: isActive ? 'rgba(99,102,241,0.5)' : 'transparent',
+              transition: 'all 0.2s'
             })}
+            title={sidebarCollapsed && !isMobile ? `${user?.name} - ${user?.role}` : undefined}
           >
             <div style={{
               width: 36, height: 36, borderRadius: '50%',
-              background: '#4f46e5', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontWeight: 700, fontSize: 14, color: 'white'
+              background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)', 
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontWeight: 700, fontSize: 14, color: 'white',
+              boxShadow: '0 2px 8px rgba(99, 102, 241, 0.4)',
+              flexShrink: 0,
             }}>
               {user?.name?.[0]?.toUpperCase()}
             </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: 'white' }}>{user?.name}</div>
-              <div style={{ fontSize: 11, opacity: 0.6, textTransform: 'capitalize', color: 'white' }}>{user?.role}</div>
-            </div>
-            <Settings size={16} style={{ opacity: 0.6, color: 'white' }} />
+            {(!sidebarCollapsed || isMobile) && (
+              <>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: 'white', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user?.name}</div>
+                  <div style={{ fontSize: 11, opacity: 0.5, textTransform: 'capitalize', color: 'white' }}>{user?.role}</div>
+                </div>
+                <Settings size={16} style={{ opacity: 0.5, color: 'white', flexShrink: 0 }} />
+              </>
+            )}
           </NavLink>
           <button
             onClick={handleLogout}
+            title={sidebarCollapsed && !isMobile ? 'Sign Out' : undefined}
             style={{
-              width: '100%', display: 'flex', alignItems: 'center', gap: 8,
-              padding: '9px 14px', borderRadius: 8, border: 'none',
-              background: 'rgba(239,68,68,0.15)', color: '#fca5a5',
-              fontWeight: 600, fontSize: 13, cursor: 'pointer'
+              width: '100%', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: sidebarCollapsed && !isMobile ? 'center' : 'flex-start',
+              gap: 8,
+              padding: sidebarCollapsed && !isMobile ? '10px' : '10px 14px', 
+              borderRadius: 8, 
+              border: '1px solid rgba(239,68,68,0.3)',
+              background: 'rgba(239,68,68,0.1)', 
+              color: '#fca5a5',
+              fontWeight: 600, 
+              fontSize: 13, 
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.background = 'rgba(239,68,68,0.2)'
+              e.target.style.borderColor = 'rgba(239,68,68,0.5)'
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = 'rgba(239,68,68,0.1)'
+              e.target.style.borderColor = 'rgba(239,68,68,0.3)'
             }}
           >
             <LogOut size={16} />
-            Sign Out
+            {(!sidebarCollapsed || isMobile) && 'Sign Out'}
           </button>
         </div>
       </aside>
@@ -178,7 +378,7 @@ export default function Layout() {
       {/* Main */}
       <main style={{
         flex: 1,
-        marginLeft: isMobile ? 0 : 260,
+        marginLeft: isMobile ? 0 : sidebarWidth,
         minHeight: '100vh',
         display: 'flex',
         flexDirection: 'column',
