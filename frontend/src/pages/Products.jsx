@@ -119,7 +119,7 @@ function ProductModal({ product, categories, suppliers, onClose, onSave }) {
       <div className="modal" style={{ maxWidth: 600 }} onClick={e => e.stopPropagation()}>
         <div className="modal-header">
           <h2>{product ? 'Edit Product' : 'Add Product'}</h2>
-          <button onClick={onClose} style={{ background:'none', border:'none', cursor:'pointer', color:'#64748b' }}>
+          <button onClick={onClose} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--text-muted)' }}>
             <X size={20} />
           </button>
         </div>
@@ -347,9 +347,9 @@ export default function Products() {
           <option value="">All Categories</option>
           {categories.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
         </select>
-        <label style={{ display:'flex', alignItems:'center', gap:6, fontSize:14, cursor:'pointer', padding:'8px 14px', background:'white', border:'1px solid var(--border)', borderRadius:8 }}>
+        <label style={{ display:'flex', alignItems:'center', gap:6, fontSize:14, cursor:'pointer', padding:'8px 14px', background:'var(--card)', border:'1px solid var(--border)', borderRadius:8 }}>
           <input type="checkbox" checked={filterLow} onChange={e=>setFilterLow(e.target.checked)} />
-          <AlertTriangle size={14} color="#f59e0b" />
+          <AlertTriangle size={14} color="var(--warning)" />
           Low Stock Only
         </label>
       </div>
@@ -367,8 +367,8 @@ export default function Products() {
                   <div style={{ display:'flex', alignItems:'center', gap:12 }}>
                     {p.image
                       ? <img src={`/storage/${p.image}`} alt={p.name} style={{ width:36, height:36, borderRadius:8, objectFit:'cover' }} />
-                      : <div style={{ width:36, height:36, borderRadius:8, background:'#f1f5f9', display:'flex', alignItems:'center', justifyContent:'center' }}>
-                          <Package size={16} color="#94a3b8" />
+                      : <div style={{ width:36, height:36, borderRadius:8, background:'var(--bg-secondary)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                          <Package size={16} color="var(--text-muted)" />
                         </div>
                     }
                     <div>
@@ -392,7 +392,7 @@ export default function Products() {
                 sortable: true,
                 render: (p) => p.supplier ? (
                   <div style={{ display:'flex', alignItems:'center', gap:6 }}>
-                    <Truck size={14} color="#6b7280" />
+                    <Truck size={14} color="var(--text-muted)" />
                     <span style={{ fontSize:13 }}>{p.supplier.name}</span>
                   </div>
                 ) : (
@@ -411,7 +411,7 @@ export default function Products() {
                 sortable: true,
                 render: (p) => (
                   <>
-                    <span style={{ fontWeight:700, color: isLow(p) ? '#f59e0b' : 'var(--text)' }}>{p.quantity}</span>
+                    <span style={{ fontWeight:700, color: isLow(p) ? 'var(--warning)' : 'var(--text)' }}>{p.quantity}</span>
                     <span style={{ fontSize:11, color:'var(--text-muted)', marginLeft:4 }}>units</span>
                   </>
                 )
