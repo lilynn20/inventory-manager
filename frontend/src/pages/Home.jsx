@@ -1,7 +1,30 @@
-import { Link } from 'react-router-dom'
-import { Package, BarChart3, Users, Shield, ArrowRight, Check, TrendingUp, Bell } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+import { Package, BarChart3, Users, Shield, ArrowRight, Check, TrendingUp, Bell, ChevronDown, LogOut, LayoutDashboard, User } from 'lucide-react'
 
 export default function Home() {
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+  const [profileOpen, setProfileOpen] = useState(false)
+  const dropdownRef = useRef(null)
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setProfileOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const handleLogout = async () => {
+    await logout()
+    setProfileOpen(false)
+  }
+
   const features = [
     {
       icon: Package,
@@ -53,12 +76,151 @@ export default function Home() {
             <span style={{ fontSize: 22, fontWeight: 800, color: 'white' }}>StockFlow</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <Link to="/login" style={{ color: 'rgba(255,255,255,0.8)', fontWeight: 600, fontSize: 15 }}>
-              Sign In
-            </Link>
-            <Link to="/register" style={{ background: 'white', color: '#4f46e5', padding: '10px 20px', borderRadius: 10, fontWeight: 700, fontSize: 15 }}>
-              Get Started Free
-            </Link>
+            {user ? (
+              /* Logged in - show profile dropdown */
+              <div ref={dropdownRef} style={{ position: 'relative' }}>
+                <button
+                  onClick={() => setProfileOpen(!profileOpen)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    background: 'rgba(255,255,255,0.15)',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    borderRadius: 12,
+                    padding: '8px 16px',
+                    cursor: 'pointer',
+                    color: 'white',
+                  }}
+                >
+                  <div style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: '50%',
+                    background: '#4f46e5',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 700,
+                    fontSize: 14,
+                  }}>
+                    {user.name?.[0]?.toUpperCase()}
+                  </div>
+                  <span style={{ fontWeight: 600, fontSize: 14 }}>{user.name}</span>
+                  <ChevronDown size={16} style={{ opacity: 0.7, transform: profileOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }} />
+                </button>
+                
+                {profileOpen && (
+                  <div style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 8px)',
+                    right: 0,
+                    background: 'white',
+                    borderRadius: 12,
+                    boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
+                    minWidth: 200,
+                    overflow: 'hidden',
+                    animation: 'fadeIn 0.15s ease',
+                    zIndex: 100,
+                  }}>
+                    <div style={{ padding: '16px', borderBottom: '1px solid #e5e7eb' }}>
+                      <div style={{ fontWeight: 700, color: '#1e1b4b' }}>{user.name}</div>
+                      <div style={{ fontSize: 13, color: '#6b7280' }}>{user.email}</div>
+                      <div style={{ marginTop: 6 }}>
+                        <span style={{
+                          fontSize: 11,
+                          fontWeight: 600,
+                          textTransform: 'uppercase',
+                          background: user.role === 'admin' ? '#4f46e5' : '#6b7280',
+                          color: 'white',
+                          padding: '2px 8px',
+                          borderRadius: 4,
+                        }}>
+                          {user.role}
+                        </span>
+                      </div>
+                    </div>
+                    <div style={{ padding: '8px' }}>
+                      <Link
+                        to="/dashboard"
+                        onClick={() => setProfileOpen(false)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 10,
+                          padding: '10px 12px',
+                          borderRadius: 8,
+                          color: '#374151',
+                          textDecoration: 'none',
+                          fontWeight: 500,
+                          fontSize: 14,
+                          transition: 'background 0.15s',
+                        }}
+                        onMouseEnter={e => e.target.style.background = '#f3f4f6'}
+                        onMouseLeave={e => e.target.style.background = 'transparent'}
+                      >
+                        <LayoutDashboard size={16} />
+                        Go to Dashboard
+                      </Link>
+                      <Link
+                        to="/dashboard/profile"
+                        onClick={() => setProfileOpen(false)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 10,
+                          padding: '10px 12px',
+                          borderRadius: 8,
+                          color: '#374151',
+                          textDecoration: 'none',
+                          fontWeight: 500,
+                          fontSize: 14,
+                          transition: 'background 0.15s',
+                        }}
+                        onMouseEnter={e => e.target.style.background = '#f3f4f6'}
+                        onMouseLeave={e => e.target.style.background = 'transparent'}
+                      >
+                        <User size={16} />
+                        Profile Settings
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 10,
+                          padding: '10px 12px',
+                          borderRadius: 8,
+                          color: '#ef4444',
+                          fontWeight: 500,
+                          fontSize: 14,
+                          width: '100%',
+                          border: 'none',
+                          background: 'transparent',
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                        }}
+                        onMouseEnter={e => e.target.style.background = '#fef2f2'}
+                        onMouseLeave={e => e.target.style.background = 'transparent'}
+                      >
+                        <LogOut size={16} />
+                        Sign Out
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* Not logged in - show sign in / register */
+              <>
+                <Link to="/login" style={{ color: 'rgba(255,255,255,0.8)', fontWeight: 600, fontSize: 15 }}>
+                  Sign In
+                </Link>
+                <Link to="/register" style={{ background: 'white', color: '#4f46e5', padding: '10px 20px', borderRadius: 10, fontWeight: 700, fontSize: 15 }}>
+                  Get Started Free
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </nav>
