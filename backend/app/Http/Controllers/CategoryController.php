@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\Product;
 use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,9 +13,21 @@ class CategoryController extends Controller
     public function index()
     {
         $companyId = Auth::user()->company_id;
-        $categories = Category::where('company_id', $companyId)
-            ->withCount('products')
-            ->get();
+        $categories = Category::where('company_id', $companyId)->get();
+        
+        // Manually count products for each category (MongoDB doesn't support withCount)
+        $productCounts = Product::where('company_id', $companyId)
+            ->whereNotNull('category_id')
+            ->get()
+            ->groupBy('category_id')
+            ->map(fn($products) => $products->count());
+        
+        // Add products_count to each category
+        $categories = $categories->map(function ($category) use ($productCounts) {
+            $category->products_count = $productCounts->get((string) $category->_id, 0);
+            return $category;
+        });
+        
         return response()->json($categories);
     }
 
