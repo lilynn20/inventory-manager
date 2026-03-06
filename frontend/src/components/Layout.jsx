@@ -271,31 +271,44 @@ export default function Layout() {
         {!isMobile && (
           <button
             onClick={toggleSidebarCollapse}
-            style={{
-              position: 'absolute',
-              right: -12,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              width: 24,
-              height: 24,
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
-              border: '2px solid var(--bg)',
-              color: 'white',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-              transition: 'transform 0.2s',
-            }}
-            onMouseEnter={(e) => e.target.style.transform = 'translateY(-50%) scale(1.1)'}
-            onMouseLeave={(e) => e.target.style.transform = 'translateY(-50%)'}
+            className="sidebar-collapse-btn"
             title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
             {sidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
           </button>
         )}
+
+        <style>{`
+          .sidebar-collapse-btn {
+            position: absolute;
+            right: -12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            border: 2px solid var(--bg);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+          }
+          .sidebar-collapse-btn:hover {
+            transform: translateY(-50%) scale(1.15);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+          }
+          .sidebar-collapse-btn:active {
+            transform: translateY(-50%) scale(1.05);
+          }
+          .sidebar-collapse-btn svg {
+            pointer-events: none;
+          }
+        `}</style>
 
         {/* User */}
         <div style={{ 
