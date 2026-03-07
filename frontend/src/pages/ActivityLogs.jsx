@@ -130,8 +130,8 @@ export default function ActivityLogs() {
               onChange={e => setFilters(f => ({ ...f, entity_type: e.target.value, page: 1 }))}
             >
               <option value="">All Entities</option>
-              {types.entity_types.map(t => (
-                <option key={t} value={t}>{t.replace('_', ' ')}</option>
+              {types.entity_types.map(t2 => (
+                <option key={t2} value={t2}>{t2.replace('_', ' ')}</option>
               ))}
             </select>
           </div>
@@ -182,7 +182,7 @@ export default function ActivityLogs() {
                   <th>Action</th>
                   <th>Entity</th>
                   <th>Details</th>
-                  <th>IP</th>
+                  <th>IP Address</th>
                 </tr>
               </thead>
               <tbody>

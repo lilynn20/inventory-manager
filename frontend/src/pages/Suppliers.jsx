@@ -4,8 +4,10 @@ import { useAuth } from '../context/AuthContext'
 import { useConfirm } from '../components/ConfirmDialog'
 import toast from 'react-hot-toast'
 import { Plus, Pencil, Trash2, X, Truck, Search, Mail, Phone, MapPin } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 function SupplierModal({ supplier, onClose, onSave }) {
+  const { t } = useTranslation()
   const [form, setForm] = useState({
     name: supplier?.name || '',
     email: supplier?.email || '',
@@ -22,10 +24,10 @@ function SupplierModal({ supplier, onClose, onSave }) {
     try {
       if (supplier) {
         await updateSupplier(supplier._id, form)
-        toast.success('Supplier updated')
+        toast.success(t(supplier ? 'suppliers.updated' : 'suppliers.created'))
       } else {
         await createSupplier(form)
-        toast.success('Supplier created')
+        toast.success(t('suppliers.created'))
       }
       onSave()
     } catch (err) {
@@ -33,7 +35,7 @@ function SupplierModal({ supplier, onClose, onSave }) {
       if (errors) {
         Object.values(errors).flat().forEach(m => toast.error(m))
       } else {
-        toast.error(err.response?.data?.error || 'Error saving supplier')
+        toast.error(err.response?.data?.error || t('suppliers.errorSaving'))
       }
     } finally {
       setSaving(false)
@@ -44,7 +46,7 @@ function SupplierModal({ supplier, onClose, onSave }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>{supplier ? 'Edit Supplier' : 'Add Supplier'}</h2>
+          <h2>{supplier ? t('suppliers.edit') : t('suppliers.add')}</h2>
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}>
             <X size={20} />
           </button>
@@ -52,50 +54,50 @@ function SupplierModal({ supplier, onClose, onSave }) {
         <form onSubmit={handleSubmit}>
           <div className="modal-body">
             <div className="form-group">
-              <label>Supplier Name *</label>
+              <label>{t('suppliers.name')} *</label>
               <input
                 className="form-control"
                 value={form.name}
                 onChange={e => set('name', e.target.value)}
                 required
-                placeholder="Enter supplier name"
+                placeholder={t('suppliers.namePlaceholder')}
               />
             </div>
             <div className="form-group">
-              <label>Email</label>
+              <label>{t('suppliers.email')}</label>
               <input
                 type="email"
                 className="form-control"
                 value={form.email}
                 onChange={e => set('email', e.target.value)}
-                placeholder="supplier@example.com"
+                placeholder={t('suppliers.emailPlaceholder')}
               />
             </div>
             <div className="form-group">
-              <label>Phone</label>
+              <label>{t('suppliers.phone')}</label>
               <input
                 className="form-control"
                 value={form.phone}
                 onChange={e => set('phone', e.target.value)}
-                placeholder="+1 234 567 890"
+                placeholder={t('suppliers.phonePlaceholder')}
               />
             </div>
             <div className="form-group">
-              <label>Address</label>
+              <label>{t('suppliers.address')}</label>
               <textarea
                 className="form-control"
                 value={form.address}
                 onChange={e => set('address', e.target.value)}
                 rows={2}
                 style={{ resize: 'vertical' }}
-                placeholder="Full address"
+                placeholder={t('suppliers.addressPlaceholder')}
               />
             </div>
           </div>
           <div className="modal-footer">
-            <button type="button" className="btn btn-outline" onClick={onClose}>Cancel</button>
+            <button type="button" className="btn btn-outline" onClick={onClose}>{t('actions.cancel')}</button>
             <button type="submit" className="btn btn-primary" disabled={saving}>
-              {saving ? 'Saving...' : supplier ? 'Update' : 'Create'}
+              {saving ? t('actions.saving') : supplier ? t('actions.update') : t('actions.create')}
             </button>
           </div>
         </form>
@@ -105,6 +107,7 @@ function SupplierModal({ supplier, onClose, onSave }) {
 }
 
 export default function Suppliers() {
+  const { t } = useTranslation()
   const { isAdmin } = useAuth()
   const { confirm } = useConfirm()
   const [suppliers, setSuppliers] = useState([])
@@ -116,7 +119,7 @@ export default function Suppliers() {
     const params = search ? { search } : {}
     getSuppliers(params)
       .then(r => setSuppliers(r.data))
-      .catch(() => toast.error('Failed to load suppliers'))
+      .catch(() => toast.error(t('suppliers.failedToLoad')))
       .finally(() => setLoading(false))
   }
 
@@ -124,28 +127,28 @@ export default function Suppliers() {
 
   const handleDelete = async (s) => {
     const result = await confirm({
-      title: 'Delete Supplier',
-      message: `Are you sure you want to delete "${s.name}"? This action cannot be undone.`,
-      confirmText: 'Delete',
+      title: t('suppliers.deleteTitle'),
+      message: t('suppliers.deleteMessage', { name: s.name }),
+      confirmText: t('actions.delete'),
       variant: 'danger'
     })
     if (!result) return
     try {
       await deleteSupplier(s._id)
-      toast.success('Supplier deleted')
+      toast.success(t('suppliers.deleted'))
       load()
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to delete')
+      toast.error(err.response?.data?.error || t('suppliers.failedToDelete'))
     }
   }
 
   return (
     <div className="fade-in">
       <div className="page-header">
-        <h1 className="page-title">Suppliers</h1>
+        <h1 className="page-title">{t('suppliers.title')}</h1>
         {isAdmin && (
           <button className="btn btn-primary" onClick={() => setModal('add')}>
-            <Plus size={16} /> Add Supplier
+            <Plus size={16} /> {t('suppliers.add')}
           </button>
         )}
       </div>
@@ -157,7 +160,7 @@ export default function Suppliers() {
           <input
             className="form-control"
             style={{ paddingLeft: 38 }}
-            placeholder="Search suppliers..."
+            placeholder={t('suppliers.searchPlaceholder')}
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
@@ -169,10 +172,10 @@ export default function Suppliers() {
       ) : suppliers.length === 0 ? (
         <div className="card empty-state">
           <Truck size={48} style={{ opacity: 0.3, marginBottom: 12 }} />
-          <p>No suppliers found</p>
+          <p>{t('suppliers.empty')}</p>
           {isAdmin && (
             <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={() => setModal('add')}>
-              Add your first supplier
+              {t('suppliers.addFirst')}
             </button>
           )}
         </div>
@@ -194,10 +197,10 @@ export default function Suppliers() {
                 </div>
                 {isAdmin && (
                   <div style={{ display: 'flex', gap: 6 }}>
-                    <button className="btn-icon" onClick={() => setModal(s)} title="Edit">
+                    <button className="btn-icon" onClick={() => setModal(s)} title={t('actions.edit')}>
                       <Pencil size={14} />
                     </button>
-                    <button className="btn-icon danger" onClick={() => handleDelete(s)} title="Delete">
+                    <button className="btn-icon danger" onClick={() => handleDelete(s)} title={t('actions.delete')}>
                       <Trash2 size={14} />
                     </button>
                   </div>
@@ -224,7 +227,7 @@ export default function Suppliers() {
                   </div>
                 )}
                 {!s.email && !s.phone && !s.address && (
-                  <span style={{ fontStyle: 'italic', opacity: 0.6 }}>No contact info</span>
+                  <span style={{ fontStyle: 'italic', opacity: 0.6 }}>{t('suppliers.noContact')}</span>
                 )}
               </div>
             </div>

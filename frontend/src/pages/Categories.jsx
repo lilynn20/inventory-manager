@@ -5,8 +5,10 @@ import { useConfirm } from '../components/ConfirmDialog'
 import toast from 'react-hot-toast'
 import { Plus, Pencil, Trash2, X, Tag } from 'lucide-react'
 import DataTable from '../components/DataTable'
+import { useTranslation } from 'react-i18next'
 
 function CategoryModal({ category, onClose, onSave }) {
+  const { t } = useTranslation();
   const [name, setName]             = useState(category?.name || '')
   const [description, setDescription] = useState(category?.description || '')
   const [saving, setSaving]           = useState(false)
@@ -17,14 +19,14 @@ function CategoryModal({ category, onClose, onSave }) {
     try {
       if (category) {
         await updateCategory(category._id, { name, description })
-        toast.success('Category updated')
+        toast.success(t(category ? 'categories.updated' : 'categories.created'));
       } else {
         await createCategory({ name, description })
-        toast.success('Category created')
+        toast.success(t('categories.created'));
       }
       onSave()
     } catch (err) {
-      toast.error(err.response?.data?.message || err.response?.data?.error || 'Error saving category')
+      toast.error(err.response?.data?.message || err.response?.data?.error || t('categories.errorSaving'));
     } finally {
       setSaving(false)
     }
@@ -34,7 +36,7 @@ function CategoryModal({ category, onClose, onSave }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>{category ? 'Edit Category' : 'Add Category'}</h2>
+          <h2>{category ? t('categories.edit') : t('categories.add')}</h2>
           <button onClick={onClose} style={{ background:'none', border:'none', cursor:'pointer', color:'#64748b' }}>
             <X size={20} />
           </button>
@@ -42,18 +44,18 @@ function CategoryModal({ category, onClose, onSave }) {
         <form onSubmit={handleSubmit}>
           <div className="modal-body">
             <div className="form-group">
-              <label>Name *</label>
-              <input className="form-control" value={name} onChange={e=>setName(e.target.value)} required placeholder="e.g. Electronics" />
+              <label>{t('categories.name')} *</label>
+              <input className="form-control" value={name} onChange={e=>setName(e.target.value)} required placeholder={t('categories.namePlaceholder')} />
             </div>
             <div className="form-group">
-              <label>Description</label>
-              <textarea className="form-control" value={description} onChange={e=>setDescription(e.target.value)} rows={3} placeholder="Optional description" style={{ resize:'vertical' }} />
+              <label>{t('categories.description')}</label>
+              <textarea className="form-control" value={description} onChange={e=>setDescription(e.target.value)} rows={3} placeholder={t('categories.descriptionPlaceholder')} style={{ resize:'vertical' }} />
             </div>
           </div>
           <div className="modal-footer">
-            <button type="button" className="btn btn-outline" onClick={onClose}>Cancel</button>
+            <button type="button" className="btn btn-outline" onClick={onClose}>{t('actions.cancel')}</button>
             <button type="submit" className="btn btn-primary" disabled={saving}>
-              {saving ? 'Saving...' : category ? 'Update' : 'Create'}
+              {saving ? t('actions.saving') : category ? t('actions.update') : t('actions.create')}
             </button>
           </div>
         </form>
@@ -68,11 +70,12 @@ export default function Categories() {
   const [categories, setCategories] = useState([])
   const [loading, setLoading]       = useState(true)
   const [modal, setModal]           = useState(null) // null | 'add' | category obj
+  const { t } = useTranslation();
 
   const load = () => {
     getCategories()
       .then(r => setCategories(r.data))
-      .catch(() => toast.error('Failed to load categories'))
+      .catch(() => toast.error(t('categories.failedToLoad')))
       .finally(() => setLoading(false))
   }
 
@@ -80,28 +83,28 @@ export default function Categories() {
 
   const handleDelete = async (cat) => {
     const result = await confirm({
-      title: 'Delete Category',
-      message: `Are you sure you want to delete "${cat.name}"? This action cannot be undone.`,
-      confirmText: 'Delete',
+      title: t('categories.deleteTitle'),
+      message: t('categories.deleteMessage', { name: cat.name }),
+      confirmText: t('actions.delete'),
       variant: 'danger'
     })
     if (!result) return
     try {
       await deleteCategory(cat._id)
-      toast.success('Category deleted')
+      toast.success(t('categories.deleted'))
       load()
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to delete')
+      toast.error(err.response?.data?.error || t('categories.failedToDelete'))
     }
   }
 
   return (
     <div className="fade-in">
       <div className="page-header">
-        <h1 className="page-title">Categories</h1>
+        <h1 className="page-title">{t('categories.title')}</h1>
         {isAdmin && (
           <button className="btn btn-primary" onClick={() => setModal('add')}>
-            <Plus size={16} /> Add Category
+            <Plus size={16} /> {t('categories.add')}
           </button>
         )}
       </div>
@@ -119,30 +122,30 @@ export default function Categories() {
               },
               {
                 key: 'name',
-                label: 'Name',
+                label: t('categories.name'),
                 sortable: true,
                 render: (cat) => <strong>{cat.name}</strong>
               },
               {
                 key: 'description',
-                label: 'Description',
+                label: t('categories.description'),
                 render: (cat) => <span style={{ color:'var(--text-muted)', maxWidth:300 }}>{cat.description || '—'}</span>
               },
               {
                 key: 'products_count',
-                label: 'Products',
+                label: t('categories.products'),
                 sortable: true,
                 render: (cat) => <span className="badge badge-info">{cat.products_count ?? 0}</span>
               },
               {
                 key: 'created_at',
-                label: 'Created',
+                label: t('categories.created'),
                 sortable: true,
                 render: (cat) => <span style={{ color:'var(--text-muted)', fontSize:13 }}>{new Date(cat.created_at).toLocaleDateString()}</span>
               },
               ...(isAdmin ? [{
                 key: 'actions',
-                label: 'Actions',
+                label: t('actions.actions'),
                 render: (cat) => (
                   <div style={{ display:'flex', gap:6 }}>
                     <button className="btn btn-outline btn-sm" onClick={() => setModal(cat)}>
@@ -157,7 +160,7 @@ export default function Categories() {
             ]}
             data={categories}
             emptyIcon={<Tag size={40} />}
-            emptyMessage="No categories found"
+            emptyMessage={t('categories.empty')}
           />
         )
       }

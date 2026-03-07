@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
-import { useLanguage } from '../context/LanguageContext'
+import { useTranslation } from 'react-i18next'
 import { useKeyboard } from '../context/KeyboardContext'
 import Breadcrumbs from './Breadcrumbs'
 import OnboardingTour, { useOnboarding } from './OnboardingTour'
@@ -62,7 +62,7 @@ const navItems = [
 export default function Layout() {
   const { user, logout, isAdmin } = useAuth()
   const { isDark, toggleTheme } = useTheme()
-  const { language, toggleLanguage, t } = useLanguage()
+  const { i18n, t } = useTranslation()
   const { setShowHelp } = useKeyboard()
   const { showTour, completeTour, startTour } = useOnboarding()
   const navigate = useNavigate()
@@ -103,6 +103,13 @@ export default function Layout() {
     await logout()
     navigate('/')
   }
+
+  // Language toggle for react-i18next
+  const toggleLanguage = () => {
+    const newLang = i18n.language === 'en' ? 'fr' : 'en';
+    i18n.changeLanguage(newLang);
+    localStorage.setItem('lang', newLang);
+  };
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
@@ -554,10 +561,10 @@ export default function Layout() {
               fontWeight: 700,
               gap: 6,
             }}
-            title={language === 'en' ? 'Switch to French' : 'Passer en anglais'}
+            title={i18n.language === 'en' ? 'Switch to French' : 'Passer en anglais'}
           >
-            <span style={{ fontSize: 16 }}>{language === 'en' ? '🇬🇧' : '🇫🇷'}</span>
-            {!isMobile && <span>{language.toUpperCase()}</span>}
+            <span style={{ fontSize: 16 }}>{i18n.language === 'en' ? '🇬🇧' : '🇫🇷'}</span>
+            {!isMobile && <span>{i18n.language.toUpperCase()}</span>}
           </button>
           
           {/* User info - hide details on mobile */}
